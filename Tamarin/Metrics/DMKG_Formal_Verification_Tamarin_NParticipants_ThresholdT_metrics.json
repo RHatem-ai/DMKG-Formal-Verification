@@ -1,0 +1,11 @@
+{
+    "Tool": "Tamarin",
+    "Model": "DMKG_Formal_Verification_Tamarin_NParticipants_ThresholdT (1).spthy",
+    "Execution_Time_s": 171.3849,
+    "Max_RAM_MiB": 2672.1953,
+    "Result_Count": 5,
+    "Proved": 5,
+    "Not_Proved": 0,
+    "Unknown": 0,
+    "Exit_Code": 0
+}

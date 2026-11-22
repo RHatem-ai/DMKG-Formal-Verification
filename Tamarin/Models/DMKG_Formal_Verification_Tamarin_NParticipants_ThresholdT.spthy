@@ -1,0 +1,736 @@
+// DMKG protocol | Tamarin specification
+theory DMKG_V6_15_VMSS_Two_Sides_Equality
+begin
+functions:
+g1/0,
+u1/0,
+exp1/2,
+exp2/2,
+multiplyGroup2Elements/2,
+committeeN/0,
+thresholdT/0,
+degreeForThreshold/1 [private],
+pvssPk/1,
+vmssPk/1,
+sigPk/1,
+vmssEnc/2,
+constructPVSSPolynomial/3 [private],
+buildPVSSCoefficientCommitmentVector/1 [private],
+buildPVSSShareCommitmentVector/2 [private],
+buildPVSSEncryptedShareVector/2 [private],
+hOfTranscript/1 [private],
+getPVSSShareCommitmentVector/1 [private],
+yOfTranscript/1 [private],
+uOfTranscript/1 [private],
+weigthOfTranscript/1 [private],
+makeOneHotWeightVector/2 [private],
+proofVector/3 [private],
+proofKnowledgeZi/2 [private],
+proofBindingZi/3 [private],
+sigma/2 [private],
+pvss/11,
+addWeightVectors/2 [private],
+mulG1Vec/2 [private],
+mulG2Vec/2 [private],
+calculateBitCount/1 [private],
+simplifiedAggregatedPVSSTranscript/7,
+thresholdVerificationCertificat/3 [private],
+candidateValidationCertificat/4 [private],
+candidateHasLowestBitCertificat/4 [private],
+decryptAggregatedZShareVector/3 [private],
+verifyDecryptedZShareVector/4 [private],
+thresholdValidatedZShareCertificat/4 [private],
+zReconstructionCertificat/3 [private],
+reconstructZFromValidatedBundle/2 [private],
+selectedPVSSZCommitment/1 [private],
+vmssPolynomialF/3 [private],
+vmssPolynomialFHat/3 [private],
+vmssPolynomialG/3 [private],
+vmssPolynomialGHat/3 [private],
+vmssState/4 [private],
+fShare/2 [private],
+fHatShare/2 [private],
+gShare/2 [private],
+gHatShare/2 [private],
+vmssShare/4 [private],
+vmssEquationValue/4 [private],
+vmssCoeffCommitVector/1 [private],
+vmssCommitX1/1 [private],
+vmssCommitY1/1 [private],
+vmssCommitX2/1 [private],
+vmssCommitY2/1 [private],
+vmssEncShareVec/2 [private],
+constructVMSSTranscript/9,
+createComplaint/3,
+disputeProof/2 [private],
+vmssQualificationWitness/2 [private],
+qualEmpty/0 [private],
+addDealerToQUAL/2 [private],
+qualThresholdCertificate/2 [private],
+globalVMSSShareCertificate/4 [private],
+calculateVMSSShareReceivedfromAllDealersInQUAL/2 [private],
+vmssSecretsSMeetsThresholdCertificat/2 [private],
+recoverVMSSSecrets/3 [private],
+recoveredX1/1 [private],
+recoveredX2/1 [private],
+recoveredY1/1 [private],
+recoveredY2/1 [private],
+publicC1/2,
+publicC2/2,
+finalSK/5 [private],
+finalPK/3
+
+// 01 | Participant registration and public parameters
+// Register a participant and initialize its protocol state.
+rule RegisterParticipant:
+[ Fr(~ident), Fr(~dec_pvss), Fr(~sk_vmss), Fr(~sk_signature) ]
+--[ ParticipantRegistered(~ident) ]->
+[ !Participant(~ident),
+SecurityStatePending(~ident),
+!ParticipantHasPVSSDecKey(~ident,~dec_pvss),
+!ParticipantHasVMSSSecretKey(~ident,~sk_vmss),
+!ParticipantHasSignSecretKey(~ident,~sk_signature),
+AuthorizeParticipantPublicKeyPublication(~ident),
+AuthorizePVSSTranscript(~ident),
+AuthorizeVMSSTranscript(~ident),
+AuthorizeFinalAssemblyOfSK_PK(~ident),
+Out(~ident),
+Out(pvssPk(~dec_pvss)),
+Out(vmssPk(~sk_vmss)),
+Out(sigPk(~sk_signature))
+]
+// Publish the participant’s PVSS, VMSS, and signature public keys.
+rule PublishParticipantPublicKeys:
+[ AuthorizeParticipantPublicKeyPublication(P),
+!Participant(P),
+!ParticipantHasPVSSDecKey(P,dec),
+!ParticipantHasVMSSSecretKey(P,vsk),
+!ParticipantHasSignSecretKey(P,ssk) ]
+--[ ParticipantPublicKeysPublished(P) ]->
+[ !AssociatePVSSPublicKeyToP(P,pvssPk(dec)),
+!AssociateVMSSPublicKeyToP(P,vmssPk(vsk)),
+!AssociateSignPublicKeyToP(P,sigPk(ssk)),
+Out(<P,pvssPk(dec),vmssPk(vsk),sigPk(ssk)>)
+]
+// Enable the registered participant to follow the honest protocol.
+rule ActivateHonestParticipant:
+[ SecurityStatePending(P) ]
+--[ ParticipantActivatedAsHonest(P) ]->
+[ !HonestParticipant(P) ]
+
+// 02 | PVSS generation, validation, aggregation and z recovery
+// Generate a secret contribution and its PVSS transcript.
+rule GenerateZContributionAndPVSSTranscript:
+let poly = constructPVSSPolynomial(~zi,~coeffs,degreeForThreshold(thresholdT))
+Zi   = exp1(g1,~zi)
+Hvec = buildPVSSCoefficientCommitmentVector(poly)
+Avec = buildPVSSShareCommitmentVector(poly,committeeN)
+Yvec = buildPVSSEncryptedShareVector(poly,committeeN)
+Ui   = exp2(u1,~zi)
+Wi   = makeOneHotWeightVector(P,committeeN)
+Sig  = sigma(proofKnowledgeZi(Zi,~zi),proofBindingZi(sigPk(ssk),Zi,ssk))
+SigmaVec   = proofVector(P,Sig,committeeN)
+TranscriptPVSS  = pvss(P,Zi,Hvec,Avec,Yvec,Ui,Wi,SigmaVec,Sig,sigPk(ssk),thresholdT)
+in
+[ AuthorizePVSSTranscript(P),
+!HonestParticipant(P),
+!ParticipantHasPVSSDecKey(P,decP),
+!ParticipantHasSignSecretKey(P,ssk),
+Fr(~zi), Fr(~coeffs)
+]
+--[ ZContributionGenerated(P,~zi),
+PVSSTranscriptCreated(P,TranscriptPVSS) ]->
+[ !HonestPVSSPolynomial(P,TranscriptPVSS,poly,~zi),
+!PVSSTranscriptConstructed(P,TranscriptPVSS),
+PVSSVerificationStart(P,TranscriptPVSS),
+Out(< 'PVSS', TranscriptPVSS >)
+]
+// Check the consistency of the PVSS Feldman commitments.
+rule VerifyPVSSFeldmanCommitments:
+[ PVSSVerificationStart(D,TranscriptPVSS),
+!Participant(V),
+!PVSSTranscriptConstructed(D,TranscriptPVSS) ]
+--[ PVSSFeldmanVerificationPassed(V,D,TranscriptPVSS) ]->
+[ PVSSVerificationAfterFeldman(V,D,TranscriptPVSS) ]
+// Check that encrypted PVSS shares are consistent with the transcript.
+rule VerifyPVSSEncryptedShareConsistency:
+[ PVSSVerificationAfterFeldman(V,D,TranscriptPVSS) ]
+--[ PVSSShareEncryptionVerificationPassed(V,D,TranscriptPVSS) ]->
+[ PVSSVerificationAfterEncryptedShare(V,D,TranscriptPVSS) ]
+// Check consistency of the shared secret exponent.
+rule VerifyPVSSSameZExponent:
+[ PVSSVerificationAfterEncryptedShare(V,D,TranscriptPVSS) ]
+--[ PVSSSameZExponentVerificationPassed(V,D,TranscriptPVSS) ]->
+[ PVSSVerificationAfterSameZ(V,D,TranscriptPVSS) ]
+// Validate the PVSS Sigma proof.
+rule VerifyPVSSSigmaProof:
+[ PVSSVerificationAfterSameZ(V,D,TranscriptPVSS) ]
+--[ PVSSSigmaVerificationPassed(V,D,TranscriptPVSS) ]->
+[ PVSSVerificationComplete(V,D,TranscriptPVSS) ]
+// Accept the PVSS transcript after the required checks succeed.
+rule AcceptValidPVSSTranscript:
+[ PVSSVerificationComplete(V,D,TranscriptPVSS) ]
+--[ PVSSTranscriptAccepted(V,D,TranscriptPVSS) ]->
+[ !AcceptedPVSS(V,D,TranscriptPVSS),
+PVSSTranscriptReadyToAggregation(V,D,TranscriptPVSS),
+Out(< 'PVSS-OK', TranscriptPVSS >)
+]
+
+// 07 | Adversarial behavior and rejection (related rules)
+// Model a compromised dealer causing the PVSS Feldman commitment check to fail.
+rule CompromisedDealerPVSSFailsFeldmanCheck:
+[ ProduceBadPVSSFeldmanData(D),
+!Participant(V),
+!CompromisedParticipant(D),
+Fr(~BadT) ]
+--[ MalformedPVSSByCompromisedDealer(D,~BadT),
+PVSSFeldmanVerificationFailed(V,D,~BadT) ]->
+[ PVSSFeldmanCheckFailed(V,D,~BadT),
+Out(< 'PVSS', ~BadT >) ]
+// Model a compromised dealer causing the PVSS encrypted-share consistency check to fail.
+rule CompromisedDealerPVSSFailsEncryptedShareCheck:
+[ ProduceBadPVSSEncryptedShare(D),
+!Participant(V),
+!CompromisedParticipant(D),
+Fr(~BadT) ]
+--[ MalformedPVSSByCompromisedDealer(D,~BadT),
+PVSSEncryptedShareVerificationFailed(V,D,~BadT) ]->
+[ PVSSEncryptedShareCheckFailed(V,D,~BadT),
+Out(< 'PVSS', ~BadT >) ]
+// Model a compromised dealer causing the PVSS shared-exponent consistency check to fail.
+rule CompromisedDealerPVSSFailsSameZExponentCheck:
+[ ProduceInconsistentDataWithZi(D),
+!Participant(V),
+!CompromisedParticipant(D),
+Fr(~BadT) ]
+--[ MalformedPVSSByCompromisedDealer(D,~BadT),
+PVSSSameZExponentVerificationFailed(V,D,~BadT) ]->
+[ PVSSSameZExponentCheckFailed(V,D,~BadT),
+Out(< 'PVSS', ~BadT >) ]
+// Model a compromised dealer causing the PVSS Sigma proof check to fail.
+rule CompromisedDealerPVSSFailsSigmaCheck:
+[ ProduceInvalidPVSSSigmaProof(D),
+!Participant(V),
+!CompromisedParticipant(D),
+Fr(~BadT) ]
+--[ MalformedPVSSByCompromisedDealer(D,~BadT),
+PVSSSigmaVerificationFailed(V,D,~BadT) ]->
+[ PVSSSigmaCheckFailed(V,D,~BadT),
+Out(< 'PVSS', ~BadT >) ]
+// Flag the PVSS transcript as malformed following the Feldman check failure.
+rule MarkMalformedPVSSAfterFeldmanFailure:
+[ PVSSFeldmanCheckFailed(V,D,BadT) ]
+--[ PVSSTranscriptMarkedMalformed(V,D,BadT) ]->
+[ MalformedPVSSTranscript(V,D,BadT) ]
+// Flag the PVSS transcript as malformed following the EncryptedShare check failure.
+rule MarkMalformedPVSSAfterEncryptedShareFailure:
+[ PVSSEncryptedShareCheckFailed(V,D,BadT) ]
+--[ PVSSTranscriptMarkedMalformed(V,D,BadT) ]->
+[ MalformedPVSSTranscript(V,D,BadT) ]
+// Flag the PVSS transcript as malformed following the SameZExponent check failure.
+rule MarkMalformedPVSSAfterSameZExponentFailure:
+[ PVSSSameZExponentCheckFailed(V,D,BadT) ]
+--[ PVSSTranscriptMarkedMalformed(V,D,BadT) ]->
+[ MalformedPVSSTranscript(V,D,BadT) ]
+// Flag the PVSS transcript as malformed following the Sigma check failure.
+rule MarkMalformedPVSSAfterSigmaFailure:
+[ PVSSSigmaCheckFailed(V,D,BadT) ]
+--[ PVSSTranscriptMarkedMalformed(V,D,BadT) ]->
+[ MalformedPVSSTranscript(V,D,BadT) ]
+// Reject malformed protocol input and record the rejection.
+rule RejectMalformedPVSSTranscript:
+[ MalformedPVSSTranscript(V,D,BadT) ]
+--[ PVSSTranscriptRejected(V,D,BadT),
+ParticipantAddedToQagg(D) ]->
+[ !DealerInsertedInQagg(D) ]
+
+// 02 | PVSS generation, validation, aggregation and z recovery
+// Combine two accepted PVSS transcripts into an aggregate.
+rule AggregateTwoPVSSTranscripts:
+let Hagg = mulG1Vec(hOfTranscript(T1),hOfTranscript(T2))
+Aagg = mulG1Vec(getPVSSShareCommitmentVector(T1), getPVSSShareCommitmentVector(T2))
+Yagg = mulG2Vec(yOfTranscript(T1),yOfTranscript(T2))
+Uagg = multiplyGroup2Elements(uOfTranscript(T1),uOfTranscript(T2))
+Wagg = addWeightVectors(weigthOfTranscript(T1),weigthOfTranscript(T2))
+SimplifiedAggregatedPVSS = simplifiedAggregatedPVSSTranscript(~aggId,Hagg,Aagg,Yagg,Uagg,Wagg,thresholdT)
+in
+[ PVSSTranscriptReadyToAggregation(V,D1,T1) [no_precomp],
+PVSSTranscriptReadyToAggregation(V,D2,T2) [no_precomp],
+Fr(~aggId) ]
+--[ PVSSTranscriptsAggregated(V,~aggId,SimplifiedAggregatedPVSS),
+TwoPVSSTranscriptsAggregatedCompact(V,T1,T2,~aggId) ]->
+[ !ValidAggregatedPVSSHandle(~aggId,Hagg,Aagg,Yagg,Uagg,Wagg),
+SimplifiedStateOfAggregatedPVSSToVerificator(V,~aggId,Hagg,Aagg,Yagg,Uagg,Wagg),
+PVSSCandidateReadyToThresholdCheck(~aggId,Hagg,Aagg,Yagg,Uagg,Wagg),
+Out(< 'AGG', SimplifiedAggregatedPVSS >)
+]
+// Extend the current PVSS aggregate with another accepted transcript.
+rule AddPVSSTranscriptToAggregate:
+let Hnext = mulG1Vec(Hagg,hOfTranscript(Transcript_p))
+Anext = mulG1Vec(Aagg,getPVSSShareCommitmentVector(Transcript_p))
+Ynext = mulG2Vec(Yagg,yOfTranscript(Transcript_p))
+Unext = multiplyGroup2Elements(Uagg,uOfTranscript(Transcript_p))
+Wnext = addWeightVectors(Wagg,weigthOfTranscript(Transcript_p))
+SimplifiedAggregatedPVSS = simplifiedAggregatedPVSSTranscript(~aggNext,Hnext,Anext,Ynext,Unext,Wnext,thresholdT)
+in
+[ SimplifiedStateOfAggregatedPVSSToVerificator(V,AggId,Hagg,Aagg,Yagg,Uagg,Wagg),
+PVSSTranscriptReadyToAggregation(V,D,Transcript_p) [no_precomp],
+Fr(~aggNext) ]
+--[ PVSSTranscriptsAggregated(V,~aggNext,SimplifiedAggregatedPVSS),
+AgregatedPVSSExtendedWithParticipantTranscript(V,AggId,Transcript_p,~aggNext) ]->
+[ !ValidAggregatedPVSSHandle(~aggNext,Hnext,Anext,Ynext,Unext,Wnext),
+SimplifiedStateOfAggregatedPVSSToVerificator(V,~aggNext,Hnext,Anext,Ynext,Unext,Wnext),
+PVSSCandidateReadyToThresholdCheck(~aggNext,Hnext,Anext,Ynext,Unext,Wnext),
+Out(< 'AGG', SimplifiedAggregatedPVSS >)
+]
+// Begin checking whether the PVSS aggregate meets the threshold.
+rule StartPVSSAggregateThresholdCheck:
+[ PVSSCandidateReadyToThresholdCheck(AggId,Hagg,Aagg,Yagg,Uagg,Wagg),
+!ValidAggregatedPVSSHandle(AggId,Hagg,Aagg,Yagg,Uagg,Wagg) [no_precomp] ]
+--[ PVSSAggregateThresholdCheckStarted(AggId,Wagg,thresholdT) ]->
+[ PVSSAggregateThresholdCheckPending( AggId,Hagg,Aagg,Yagg,Uagg,Wagg,thresholdT) ]
+// Record evidence that the required participation threshold is met.
+rule IssueThresholdWitness:
+let ThresholdCertificat = thresholdVerificationCertificat(AggId,Wagg,thresholdT)
+in
+[ PVSSAggregateThresholdCheckPending(AggId,Hagg,Aagg,Yagg,Uagg,Wagg,thresholdT) [no_precomp] ]
+--[ PVSSAggregateThresholdCertified(AggId,Wagg,thresholdT) ]->
+[ !ThresholdVerificationOK(AggId,Wagg,thresholdT,ThresholdCertificat),
+AggregatedPVSSReadyToCandidateInSelectionStep(AggId,Hagg,Aagg,Yagg,Uagg,Wagg,ThresholdCertificat) ]
+// Initialize the set of eligible PVSS aggregate candidates.
+rule InitializeVerifiedPVSSCandidateSet:
+[ Fr(~selectionRound) ]
+--[ VerifiedPVSSCandidateRoundInitialized(~selectionRound) ]->
+[ !PVSSCandidateToSelection(~selectionRound) ]
+// Record a complete candidate for the final PVSS aggregate.
+rule RegisterCompletePVSSFinalCandidate:
+let BitCountValue  = calculateBitCount(Wagg)
+CandidateCertificat = candidateValidationCertificat(Sid,AggId,BitCountValue,ThresholdCertificat)
+in
+[ !PVSSCandidateToSelection(Sid),
+AggregatedPVSSReadyToCandidateInSelectionStep( AggId,Hagg,Aagg,Yagg,Uagg,Wagg,ThresholdCertificat) [no_precomp],
+!ThresholdVerificationOK(AggId,Wagg,thresholdT,ThresholdCertificat) [no_precomp],
+Fr(~candidateId) ]
+--[ CompletePVSSTranscriptDeclaredCandidate(Sid,~candidateId,AggId,BitCountValue),
+VerifiedPVSSCandidateRegistered(Sid,~candidateId,AggId,BitCountValue),
+VerifiedPVSSCandidateAddedToSelectionGroup(Sid,AggId,BitCountValue) ]->
+[ !PVSSCandidateMemberOfSelectionGroup(Sid,~candidateId,AggId,BitCountValue,Hagg,Aagg,Yagg,Uagg,Wagg,CandidateCertificat),
+AggregatedPVSSReadyToLowestBitSelection(Sid,~candidateId,AggId,BitCountValue,CandidateCertificat) ]
+// Certify a candidate according to the lowest-bit-count criterion.
+rule CertifyLowestBitCountPVSSCandidate:
+let LowestBitCountCandidate = candidateHasLowestBitCertificat(Sid,CandidateId,AggId,BitCountValue)
+in
+[ AggregatedPVSSReadyToLowestBitSelection(Sid,CandidateId,AggId,BitCountValue,CandidateCertificat) [no_precomp],
+!PVSSCandidateMemberOfSelectionGroup(Sid,CandidateId,AggId,BitCountValue,Hagg,Aagg,Yagg,Uagg,Wagg,CandidateCertificat) [no_precomp],
+!ThresholdVerificationOK(AggId,Wagg,thresholdT,ThresholdCertificat) [no_precomp] ]
+--[ SelectionAlgorithmOfLowestBitCountAppliedOnCandidate(Sid,CandidateId,AggId,BitCountValue),
+PVSSLowestBitCandidateCertified(Sid,CandidateId,AggId,BitCountValue) ]->
+[ LowestBitCountAggregatedTranscriptReady(Sid,CandidateId,AggId,BitCountValue,Hagg,Aagg,Yagg,Uagg,Wagg,LowestBitCountCandidate) ]
+// Select the final PVSS aggregate from eligible candidates.
+rule SelectFinalAggregatedPVSSTranscript:
+let C3 = selectedPVSSZCommitment(Hagg)
+SimplifiedAggregatedPVSS = simplifiedAggregatedPVSSTranscript(AggId,Hagg,Aagg,Yagg,Uagg,Wagg,thresholdT)
+in
+[ LowestBitCountAggregatedTranscriptReady(
+Sid,CandidateId,AggId,BitCountValue,Hagg,Aagg,Yagg,Uagg,Wagg,LowestBitCountCandidate),
+!Participant(V),
+Fr(~aid) ]
+--[ VerificatorApplyFinalSelectionOnCandidate(V,Sid,CandidateId,AggId),
+FinalAggregatedPVSSTranscriptSelected(V,AggId,SimplifiedAggregatedPVSS),
+    FinalPVSSReconstructionDataExported(V,AggId,~aid,Aagg,Yagg,C3),
+    FinalPVSSCommitmentSelected(~aid,C3) ]->
+[ FinalPVSSReconstructionData(V,~aid,Aagg,Yagg,C3),
+!SelectedFinalPVSSCommitment(~aid,C3),
+!SelectedFinalPVSSHandle(~aid,AggId),
+Out(< 'FINAL-PVSS', SimplifiedAggregatedPVSS >),
+Out(< 'FINAL-PVSS-C3', C3 >)
+]
+// Initiate recovery of the aggregated secret contribution.
+rule StartFinalPVSSZReconstruction:
+[ FinalPVSSReconstructionData(V,Aid,Aagg,Yagg,C3) [no_precomp] ]
+--[ FinalPVSSZReconstructionStarted(V,Aid),
+FinalPVSSReconstructionDataAccepted(V,Aid,Aagg,Yagg,C3) ]->
+[ FinalPVSSZDecryptionReady(V,Aid,Aagg,Yagg,C3) ]
+// Decrypt the shares associated with the selected PVSS aggregate.
+rule DecryptAggregatedZShares:
+let DecryptedZShare = decryptAggregatedZShareVector(Aid,Yagg,committeeN)
+in
+[ FinalPVSSZDecryptionReady(V,Aid,Aagg,Yagg,C3) [no_precomp] ]
+--[ AggregatedPVSSZSharesDecryptionStarted(V,Aid,Yagg),
+AggregatedPVSSZSharesDecrypted(V,Aid,Yagg,DecryptedZShare) ]->
+[ FinalPVSSZCommitmentVerificationReady(V,Aid,Aagg,DecryptedZShare,C3) ]
+// Check decrypted shares against the published commitments.
+rule VerifyDecryptedZSharesAgainstCommitments:
+let VS = verifyDecryptedZShareVector(Aid,DecryptedZShare,Aagg,committeeN)
+in
+[ FinalPVSSZCommitmentVerificationReady(V,Aid,Aagg,DecryptedZShare,C3) [no_precomp] ]
+--[ AggregatedPVSSZShareCommitmentVerificationStarted(V,Aid,Aagg,DecryptedZShare),
+AggregatedPVSSZSharesVerifiedAgainstCommitments(V,Aid,DecryptedZShare,Aagg,VS) ]->
+[ FinalPVSSReadyToZThresholdCollection(V,Aid,VS,C3) ]
+// Collect enough validated shares for reconstruction.
+rule CollectThresholdValidatedZShares:
+let CertificatOfThresholdValidateZshare = thresholdValidatedZShareCertificat(Aid,VS,committeeN,thresholdT)
+in
+[ FinalPVSSReadyToZThresholdCollection(V,Aid,VS,C3) [no_precomp] ]
+--[ ThresholdValidatedZShareCollectionStarted(V,Aid,VS,thresholdT),
+ThresholdValidatedZShareBundleCollected(V,Aid,CertificatOfThresholdValidateZshare,thresholdT) ]->
+[ ZReconstructionPending(V,Aid,CertificatOfThresholdValidateZshare,C3) ]
+// Reconstruct the secret value from validated shares.
+rule ReconstructZFromValidatedShares:
+let ReconstructZCertificat  = zReconstructionCertificat(Aid,CertificatOfThresholdValidateZshare,thresholdT)
+ZG2 = reconstructZFromValidatedBundle(CertificatOfThresholdValidateZshare,thresholdT)
+in
+[ ZReconstructionPending(V,Aid,CertificatOfThresholdValidateZshare,C3) [no_precomp] ]
+--[ ZReconstructionCertificatAccepted(V,Aid,CertificatOfThresholdValidateZshare,ReconstructZCertificat),
+ZContributionReconstructed(V,ZG2),
+ZReconstructedFromFinalPVSS(V,Aid,ZG2),
+ZReconstructionBoundToSelectedPVSSCommitment(V,Aid,ZG2,C3) ]->
+[ !ReconstructedZ(Aid,ZG2,C3),
+!ZReconstructionCertificat(Aid,CertificatOfThresholdValidateZshare,thresholdT,ReconstructZCertificat) ]
+
+// 03 | VMSS generation and verification
+// Generate VMSS contributions and the associated transcript.
+rule GenerateVMSSContributionsAndTranscript:
+let Fp    = vmssPolynomialF(~x1i,~y1i,degreeForThreshold(thresholdT))
+FHatp = vmssPolynomialFHat(~beta1,~beta2,degreeForThreshold(thresholdT))
+Gp    = vmssPolynomialG(~x2i,~y2i,degreeForThreshold(thresholdT))
+GHatp = vmssPolynomialGHat(~beta3,~beta4,degreeForThreshold(thresholdT))
+dealerVMSSPolynomialState = vmssState(Fp,FHatp,Gp,GHatp)
+E1 = vmssCommitX1(dealerVMSSPolynomialState)
+E2 = vmssCommitY1(dealerVMSSPolynomialState)
+E3 = vmssCommitX2(dealerVMSSPolynomialState)
+E4 = vmssCommitY2(dealerVMSSPolynomialState)
+coefficientCommitmentVector = vmssCoeffCommitVector(dealerVMSSPolynomialState)
+EVector = vmssEncShareVec(dealerVMSSPolynomialState,committeeN)
+vmssTranscript = constructVMSSTranscript(P,E1,E2,E3,E4,coefficientCommitmentVector,EVector,thresholdT,committeeN)
+in
+[ AuthorizeVMSSTranscript(P),
+!HonestParticipant(P),
+Fr(~x1i), Fr(~x2i), Fr(~y1i), Fr(~y2i),
+Fr(~beta1), Fr(~beta2), Fr(~beta3), Fr(~beta4)
+]
+--[ VMSSSecretContributionsGenerated(P,~x1i,~x2i,~y1i,~y2i),
+VMSSTranscriptCreated(P,vmssTranscript) ]->
+[ !HonestVMSSState(P,vmssTranscript,dealerVMSSPolynomialState, ~x1i,~x2i,~y1i,~y2i),
+!ValidVMSSTranscript(P,vmssTranscript,dealerVMSSPolynomialState),
+!VMSSCommitmentBinding(P,vmssTranscript,coefficientCommitmentVector,dealerVMSSPolynomialState),
+VMSSVerificationStart(P,vmssTranscript,dealerVMSSPolynomialState),
+Out(< 'VMSS', vmssTranscript >)
+]
+// Decrypt the VMSS share intended for the recipient.
+rule DecryptVMSSShare:
+let Share = vmssShare(
+fShare(dealerVMSSPolynomialState,Pj),
+fHatShare(dealerVMSSPolynomialState,Pj),
+gShare(dealerVMSSPolynomialState,Pj),
+gHatShare(dealerVMSSPolynomialState,Pj))
+Cipher = vmssEnc(Share,vmssPk(vsk))
+DecShare = Share
+in
+[ VMSSVerificationStart(D,vmssTranscript,dealerVMSSPolynomialState),
+!Participant(Pj),
+!ParticipantHasVMSSSecretKey(Pj,vsk),
+!AssociateVMSSPublicKeyToP(Pj,vmssPk(vsk))
+]
+--[ VMSSShareEncryptedForRecipient(D,Pj,vmssTranscript,Cipher),
+VMSSShareDecrypted(Pj,D,vmssTranscript,DecShare) ]->
+[ VMSSVerificationAfterDecrypt(Pj,D,vmssTranscript,dealerVMSSPolynomialState,Share),
+Out(< 'VMSS-SHARE', D, vmssTranscript, Pj, Cipher >)
+]
+// Compare the decrypted VMSS share with its commitment-derived value.
+rule VerifyVMSSEquation1:
+let
+  Share = vmssShare(fShare(DecryptedShare,Pj),fHatShare(DecryptedShare,Pj),
+                    gShare(DecryptedShare,Pj),gHatShare(DecryptedShare,Pj))
+  LeftSide = vmssEquationValue(fShare(DecryptedShare,Pj),
+                              fHatShare(DecryptedShare,Pj),
+                              gShare(DecryptedShare,Pj),
+                              gHatShare(DecryptedShare,Pj))
+  RightSide = vmssEquationValue(fShare(CommittedPolynomials,Pj),
+                               fHatShare(CommittedPolynomials,Pj),
+                               gShare(CommittedPolynomials,Pj),
+                               gHatShare(CommittedPolynomials,Pj))
+in
+[ VMSSVerificationAfterDecrypt(Pj,D,vmssTranscript,DecryptedShare,Share),
+  !VMSSCommitmentBinding(D,vmssTranscript,vmssCoeffCommitVector(CommittedPolynomials),CommittedPolynomials) ]
+--[ Eq(LeftSide,RightSide),
+    VMSSPublicCommitmentsChecked(Pj,D,vmssTranscript),
+    VMSSEquationChecked(Pj,D,vmssTranscript,LeftSide,RightSide),
+    VMSSEquation1Verified(Pj,D,vmssTranscript) ]->
+[ VMSSVerificationAfterEquation1(Pj,D,vmssTranscript,Share) ]
+
+// Check the VMSS transcript and the recipient’s own share.
+rule VerifyVMSSTranscriptAndOwnShare:
+[ VMSSVerificationAfterEquation1(Pj,D,vmssTranscript,Share) ]
+--[ VMSSTranscriptAccepted(Pj,D,vmssTranscript) ]->
+[ !AcceptedVMSSShare(D,Pj,Share),
+VMSSQualificationReady(D,vmssTranscript,Pj,Share),
+VerifiedVMSSSContributionReceivedByPjFromD(Pj,D,Share)
+]
+// Issue evidence that a VMSS dealer passed the required checks.
+rule IssueVMSSQualificationCertificat:
+[ VMSSQualificationReady(D,vmssTranscript,Pj,S),
+!ValidVMSSTranscript(D,vmssTranscript,dealerVMSSPolynomialState) ]
+--[ VMSSQualificationConditionReached(D,vmssTranscript) ]->
+[ VMSSQualificationOK(D, vmssTranscript, vmssQualificationWitness(D,vmssTranscript)) ]
+// Mark a dealer as qualified after successful VMSS verification.
+rule QualifyVMSSDealerAfterVerification:
+[ VMSSQualificationOK(D,vmssTranscript,W) ]
+--[ QUALDealerValidated(D) ]->
+[ QUALInsertionPending(D) ]
+
+// 07 | Adversarial behavior and rejection (related rules)
+// Model a compromised dealer submitting a VMSS contribution that fails validation.
+rule CompromisedDealerVMSSFailsCommitmentCheck:
+[ ProduceInconsistentVMSSCommitment(D),
+!Participant(Pj),
+!CompromisedParticipant(D),
+Fr(~BadReceivedTranscript) ]
+--[ MalformedVMSSByCompromisedDealer(D,~BadReceivedTranscript),
+VMSSCommitmentVerificationFailed(Pj,D,~BadReceivedTranscript),
+VMSSTranscriptMarkedMalformed(Pj,D,~BadReceivedTranscript) ]->
+[ MalformedVMSS(Pj,D,~BadReceivedTranscript),
+Out(< 'VMSS', ~BadReceivedTranscript >) ]
+// Model a compromised dealer submitting a VMSS contribution that fails validation.
+rule CompromisedDealerVMSSFailsDecryptionOrRecipientBinding:
+[ ProduceInvalidVMSSTranscriptToDestinator(D),
+!Participant(Pj),
+!CompromisedParticipant(D),
+Fr(~BadReceivedTranscript) ]
+--[ MalformedVMSSByCompromisedDealer(D,~BadReceivedTranscript),
+VMSSDecryptionVerificationFailed(Pj,D,~BadReceivedTranscript),
+VMSSTranscriptMarkedMalformed(Pj,D,~BadReceivedTranscript) ]->
+[ MalformedVMSS(Pj,D,~BadReceivedTranscript),
+Out(< 'VMSS', ~BadReceivedTranscript >) ]
+// Model a compromised dealer submitting a VMSS contribution that fails validation.
+rule CompromisedDealerVMSSFailsEquation1:
+[ ProduceInvalidVMSSVerificationOnEquation1(D),
+!Participant(Pj),
+!CompromisedParticipant(D),
+Fr(~BadReceivedTranscript) ]
+--[ MalformedVMSSByCompromisedDealer(D,~BadReceivedTranscript),
+VMSSEquation1VerificationFailed(Pj,D,~BadReceivedTranscript),
+VMSSTranscriptMarkedMalformed(Pj,D,~BadReceivedTranscript) ]->
+[ MalformedVMSS(Pj,D,~BadReceivedTranscript),
+Out(< 'VMSS', ~BadReceivedTranscript >) ]
+
+// 04 | VMSS complaints and dispute resolution
+// Record a complaint concerning an invalid VMSS contribution.
+rule RaiseVMSSComplaint:
+let CreatedComplaint = createComplaint(D,Pj,vmssTranscript)
+in
+[ MalformedVMSS(Pj,D,vmssTranscript) ]
+--[ VMSSTranscriptRejected(Pj,D,vmssTranscript),
+VMSSComplaintRaised(Pj,D,vmssTranscript) ]->
+[ PendingComplaint(CreatedComplaint,D,Pj,vmssTranscript),
+Out(< 'COMPLAINT', CreatedComplaint >)
+]
+// Handle a complaint against a dealer already included in the aggregate.
+rule ComplaintAgainstDealerAlreadyInQagg:
+[ PendingComplaint(CreatedComplaint,D,V,vmssTranscript) [no_precomp],
+!DealerInsertedInQagg(D) ]
+--[ VMSSDealerDisqualified(D),
+VMSSDealerDisqualifiedViaQagg(V,D),
+VMSSDisputeResolved(V,D,'dishonest') ]->
+[ !DisqualifiedDealer(D) ]
+// Record that the complaint threshold has been reached.
+rule IssueTooManyComplaintsWitness:
+[ PendingComplaint(CreatedComplaint,D,V,vmssTranscript) [no_precomp] ]
+--[ ComplaintThresholdReached(D,thresholdT) ]->
+[ ComplaintThresholdReachedState(CreatedComplaint,D,V,vmssTranscript,thresholdT) ]
+// Exclude a dealer when the complaint threshold is reached.
+rule DisqualifyDealerAfterComplaintThreshold:
+[ ComplaintThresholdReachedState(
+CreatedComplaint,D,V,vmssTranscript,thresholdT) ]
+--[ VMSSDealerDisqualified(D),
+VMSSDisputeResolved(V,D,'dishonest') ]->
+[ !DisqualifiedDealer(D) ]
+// Produce evidence for resolving a disputed VMSS contribution.
+rule GenerateVMSSDisputeProof:
+let expectedVMSSShare =
+vmssShare(
+fShare(dealerVMSSPolynomialState,V),
+fHatShare(dealerVMSSPolynomialState,V),
+gShare(dealerVMSSPolynomialState,V),
+gHatShare(dealerVMSSPolynomialState,V))
+DisputeProofOnComplaint =disputeProof(CreatedComplaint,expectedVMSSShare)
+in
+[ PendingComplaint(CreatedComplaint,D,V,vmssTranscript) [no_precomp],
+!HonestVMSSState(D,vmssTranscript,dealerVMSSPolynomialState, x1i,x2i,y1i,y2i)
+]
+--[ VMSSDisputeProofGenerated(D,V,vmssTranscript) ]->
+[ VMSSDisputeProof(
+CreatedComplaint,D,V,vmssTranscript,
+expectedVMSSShare,DisputeProofOnComplaint),
+Out(< 'DISPUTE-PROOF', DisputeProofOnComplaint >)
+]
+// Check the evidence submitted in a VMSS dispute.
+rule VerifyVMSSDisputeProof:
+[ VMSSDisputeProof(
+CreatedComplaint,D,V,vmssTranscript,
+expectedVMSSShare,DisputeProofOnComplaint),
+!ValidVMSSTranscript( D,vmssTranscript,dealerVMSSPolynomialState)
+]
+--[ VMSSDisputeProofVerified(V,D,vmssTranscript),
+VMSSDisputeResolved(V,D,'honest'),
+VMSSDealerValidated(V,D,vmssTranscript),
+QUALDealerValidated(D) ]->
+[ QUALInsertionPending(D) ]
+// Exclude a dealer identified as dishonest during dispute resolution.
+rule DisqualifyCorruptedVMSSDealer:
+[ PendingComplaint(
+CreatedComplaint,D,V,vmssTranscript) [no_precomp],
+!CompromisedParticipant(D) ]
+--[ VMSSDisputeResolved(V,D,'dishonest'),
+VMSSDealerDisqualified(D) ]->
+[ !DisqualifiedDealer(D) ]
+
+// 05 | QUAL formation and qualified-share aggregation
+// Initialize the set of qualified VMSS dealers.
+rule StartQUALCollection:
+let Qnext = addDealerToQUAL(qualEmpty,D)
+in
+[ QUALInsertionPending(D), Fr(~qid) ]
+--[ QUALInitialized('global',qualEmpty), DealerAddedToQUAL(D),
+    QUALDealerInserted(D), QUALDealerCollected('global',D),
+    QUALStateUpdated('global',qualEmpty,Qnext,D),
+    QUALStatePublished('global',Qnext) ]->
+[ QUALCollecting(~qid,'global',Qnext,D,'one'),
+  !QUALRecordedVersion(~qid,Qnext,D) ]
+// Add an eligible dealer to the qualified set.
+rule ExtendQUALCollection:
+let Qnext = addDealerToQUAL(Q,D)
+in
+[ QUALCollecting(Qid,'global',Q,LastD,Stage), QUALInsertionPending(D) ]
+--[ DealerAddedToQUAL(D), QUALDealerInserted(D),
+    QUALDealerCollected('global',D),
+    QUALStateUpdated('global',Q,Qnext,D),
+    QUALStatePublished('global',Qnext) ]->
+[ QUALCollecting(Qid,'global',Qnext,D,'many'),
+  !QUALRecordedVersion(Qid,Qnext,D) ]
+// Record evidence that the qualified set meets the threshold.
+rule IssueQUALThresholdCertificate:
+let QW = qualThresholdCertificate(Q,thresholdT)
+in
+[ !QUALRecordedVersion(Qid,Q,LastD), !Participant(Pj) ]
+--[ QUALThresholdCertificateIssued(Qid,Pj,Q,QW) ]->
+[ QUALThresholdCertificatePending(Qid,Pj,Q,LastD,QW) ]
+// Check the certificate associated with the qualified set.
+rule VerifyQUALThresholdCertificate:
+[ QUALThresholdCertificatePending(Qid,Pj,Q,LastD,
+    qualThresholdCertificate(Q,thresholdT)) ]
+--[ QUALThresholdCertificateVerified(Qid,Pj,Q),
+    QUALUsedForRecovery(Pj,LastD),
+    QUALRecoveryRecord(Pj,'global',Q,LastD),
+    QUALRecoveryFromPublishedSet(Qid,Pj,Q) ]->
+[ QUALCertifiedForAggregation(Qid,Pj,Q,LastD) ]
+// Combine VMSS shares contributed by qualified dealers.
+rule BuildGlobalVMSSShareForQualifiedSet:
+let GS = calculateVMSSShareReceivedfromAllDealersInQUAL(Pj,Q)
+in
+[ QUALCertifiedForAggregation(Qid,Pj,Q,LastD) ]
+--[ GlobalVMSSShareBuilt(Pj,Q),
+    GlobalVMSSShareGenerated(Qid,Pj,Q,GS) ]->
+[ GlobalVMSSShareCertificationPending(Qid,Pj,Q,GS) ]
+// Issue evidence for the assembled global VMSS share.
+rule IssueGlobalVMSSShareCertificate:
+let GW = globalVMSSShareCertificate(Q,Pj,GS,thresholdT)
+in
+[ GlobalVMSSShareCertificationPending(Qid,Pj,Q,GS) ]
+--[ GlobalVMSSShareCertificateIssued(Qid,Pj,Q,GS,GW) ]->
+[ GlobalVMSSShareCertificatePending(Qid,Pj,Q,GS,GW) ]
+// Check the evidence for the assembled global VMSS share.
+rule VerifyGlobalVMSSShareCertificate:
+[ GlobalVMSSShareCertificatePending(Qid,Pj,Q,GS,
+    globalVMSSShareCertificate(Q,Pj,GS,thresholdT)) ]
+--[ GlobalVMSSShareCertificateVerified(Qid,Pj,Q,GS),
+    VMSSGlobalShareThresholdCertified(Pj,Q) ]->
+[ VMSSRecoveryReady(Qid,Pj,Q,GS) ]
+
+// Trace restrictions
+restriction VMSS_Equation_Equality:
+"All x y #i. Eq(x,y)@#i ==> x = y"
+
+restriction QUALNoInsertionAfterDisqualification:
+"All D #i #j. VMSSDealerDisqualified(D)@#i & QUALDealerInserted(D)@#j ==> not (#i < #j)"
+
+restriction QUALNoDuplicateDealerPerRecipient:
+"All P D #i #j. QUALDealerCollected(P,D)@#i & QUALDealerCollected(P,D)@#j ==> #i = #j"
+
+// 06 | VMSS recovery threshold and final key assembly
+// Record that sufficient VMSS shares are available for recovery.
+rule IssueVMSSRecoveryThresholdWitness:
+let Cert = vmssSecretsSMeetsThresholdCertificat(GlobalShareReceivedByP,thresholdT)
+in
+[ VMSSRecoveryReady(Qid,P,Q,GlobalShareReceivedByP) ]
+--[ VMSSRecoveryThresholdReached(thresholdT),
+    VMSSRecoveryCertificateIssued(Qid,P,Q,Cert) ]->
+[ VMSSReconstructionReady(Qid,P,Q,Cert) ]
+
+// 06 | VMSS recovery threshold and final key assembly (continued)
+// Recover the VMSS secrets from the validated shares.
+rule ReconstructVMSSSecrets:
+let VMSSSecrets = recoverVMSSSecrets(committeeN,thresholdT,Cert)
+    X1 = recoveredX1(VMSSSecrets)
+    X2 = recoveredX2(VMSSSecrets)
+    Y1 = recoveredY1(VMSSSecrets)
+    Y2 = recoveredY2(VMSSSecrets)
+in
+[ VMSSReconstructionReady(Qid,P,Q,Cert) ]
+--[ VMSSSecretsReconstructed(X1,X2,Y1,Y2),
+    VMSSSecretsReconstructedFromQUAL(Qid,P,Q,X1,X2,Y1,Y2) ]->
+[ !RecoveredVMSSSecretsForQUAL(Qid,P,Q,X1,X2,Y1,Y2) ]
+// Construct the final DMKG secret and public keys.
+rule AssembleFinalDMKGKeyPair:
+let C1 = publicC1(X1,X2)
+    C2 = publicC2(Y1,Y2)
+    SK = finalSK(X1,X2,Y1,Y2,ZG2)
+    PK = finalPK(C1,C2,C3)
+in
+[ AuthorizeFinalAssemblyOfSK_PK(P),
+  !ReconstructedZ(Aid,ZG2,C3),
+  !SelectedFinalPVSSCommitment(Aid,C3),
+  !RecoveredVMSSSecretsForQUAL(Qid,Pj,Q,X1,X2,Y1,Y2) ]
+--[ FinalSecretComponentsReconstructed(P,X1,X2,Y1,Y2,ZG2),
+    FinalSecretKeyGenerated(P,SK),
+    FinalPublicKeyGenerated(P,PK),
+    FinalDMKGKeyPairGenerated(P,SK,PK,Aid,ZG2),
+    FinalPVSSCommitmentUsedInFinalKey(P,Aid,C3,ZG2),
+    FinalKeyBoundToQUAL(P,Qid,Pj,Q,Aid),
+    FinalKeyPairReady(P) ]->
+[ !FinalKeyPair(P,SK,PK,Aid,ZG2), Out(PK) ]
+
+// 07 | Adversarial behavior and rejection (continued)
+// Model an adversary compromising a participant.
+rule StaticCompromiseParticipantByAdversary:
+[ SecurityStatePending(P),
+!Participant(P),
+!ParticipantHasPVSSDecKey(P,dec),
+!ParticipantHasVMSSSecretKey(P,vsk),
+!ParticipantHasSignSecretKey(P,ssk)
+]
+--[ ParticipantStaticallyCompromisedByAdversary(P) ]->
+[ !CompromisedParticipant(P),
+ProduceBadPVSSFeldmanData(P),
+ProduceBadPVSSEncryptedShare(P),
+ProduceInconsistentDataWithZi(P),
+ProduceInvalidPVSSSigmaProof(P),
+ProduceInconsistentVMSSCommitment(P),
+ProduceInvalidVMSSTranscriptToDestinator(P),
+ProduceInvalidVMSSVerificationOnEquation1(P),
+Out(dec), Out(vsk), Out(ssk)
+]
+
+// 08 | Security properties - Lemmas
+lemma secrecy_z_contribution:
+"All P Z #i. ZContributionGenerated(P,Z)@#i ==> not (Ex #j. K(Z)@#j)"
+lemma secrecy_vmss_contributions:
+"All P X1 X2 Y1 Y2 #i. VMSSSecretContributionsGenerated(P,X1,X2,Y1,Y2)@#i ==> not ((Ex #j. K(X1)@#j) | (Ex #j. K(X2)@#j) |(Ex #j. K(Y1)@#j) | (Ex #j. K(Y2)@#j))"
+lemma secrecy_final_sk:
+"All P SK #i. FinalSecretKeyGenerated(P,SK)@#i ==> not (Ex #j. K(SK)@#j)"
+lemma correspondence_pvss_origin:
+"All V D Tr #i. PVSSTranscriptAccepted(V,D,Tr)@#i ==> (Ex #j. PVSSTranscriptCreated(D,Tr)@#j & #j < #i)"
+lemma correspondence_vmss_origin:
+"All V D Tr #i. VMSSTranscriptAccepted(V,D,Tr)@#i ==> (Ex #j. VMSSTranscriptCreated(D,Tr)@#j & #j < #i)"
+
+end

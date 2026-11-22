@@ -1,0 +1,11 @@
+{
+    "Tool": "ProVerif",
+    "Model": "DMKG_Formal_Verification_ProVerif_NParticipants_ThresholdT - VMSS Transcript Authentication.pv",
+    "Execution_Time_s": 17.9176,
+    "Max_RAM_MiB": 38.75,
+    "Result_Count": 1,
+    "Proved": 1,
+    "Not_Proved": 0,
+    "Unknown": 0,
+    "Exit_Code": 0
+}

@@ -1,0 +1,11 @@
+{
+    "Tool": "Tamarin",
+    "Model": "DMKG_Formal_Verification_Tamarin_NParticipants_ThresholdT - VMSS Transcript Authentication.spthy",
+    "Execution_Time_s": 144.5142,
+    "Max_RAM_MiB": 2546.1133,
+    "Result_Count": 5,
+    "Proved": 1,
+    "Not_Proved": 0,
+    "Unknown": 4,
+    "Exit_Code": 0
+}

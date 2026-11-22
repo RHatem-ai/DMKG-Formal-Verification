@@ -1,0 +1,1157 @@
+
+================================
+PROVERIF PERFORMANCE REPORT
+================================
+
+Model: DMKG_Formal_Verification_ProVerif_NParticipants_ThresholdT - ZContribution.pv
+Wall-clock time: 17.6366 s
+GNU wall time: 17.63 s
+User CPU time: 17.31 s
+System CPU time: 0.03 s
+CPU usage: 98%
+Maximum RAM: 29.375 MiB
+Maximum RSS: 30080.0 KiB
+Exit code: 0
+
+Total RESULT lines: 1
+Proved: 1
+Not proved: 0
+Unknown: 0
+
+================================
+SECURITY RESULTS
+================================
+
+RESULT not (event(ZContributionGenerated(P_5,z)) && attacker(z)) is true.
+
+================================
+COMPLETE OUTPUT
+================================
+
+Linear part: No equation.
+Convergent part:
+getPVSSEncKey(getPVSSDecKeyForParticipant(P)) = getPVSSEncKeyForParticipant(P)
+multiplyGroup1Elements(exp1(g1,a),exp1(g1,b)) = exp1(g1,addSommeExponent(a,b))
+multiplyGroup2Elements(exp2(h1,a),exp2(h1,b)) = exp2(h1,addSommeExponent(a,b))
+getPublicKey(getVMSSPrivateKeyForParticipant(P)) = getVMSSPublicKeyForParticipant(P)
+verifyDecryptedAggregatedZShareVector(A,decryptAggregatedZShareVector(Y,PS)) = ok
+Completing equations...
+Completed equations:
+verifyDecryptedAggregatedZShareVector(A,decryptAggregatedZShareVector(Y,PS)) = ok
+getPublicKey(getVMSSPrivateKeyForParticipant(P)) = getVMSSPublicKeyForParticipant(P)
+multiplyGroup2Elements(exp2(h1,a),exp2(h1,b)) = exp2(h1,addSommeExponent(a,b))
+multiplyGroup1Elements(exp1(g1,a),exp1(g1,b)) = exp1(g1,addSommeExponent(a,b))
+getPVSSEncKey(getPVSSDecKeyForParticipant(P)) = getPVSSEncKeyForParticipant(P)
+Process 0 (that is, the initial process):
+(
+    {1}!
+    {2}new P: participant;
+    {3}new ssk: sigkey;
+    (
+        {4}let P_1: participant = P in
+        {5}let ssk_1: sigkey = ssk in
+        {6}if (participantInSet(P_1,CommitteeN) = ok) then
+        {7}event ParticipantRegistered(P_1);
+        {8}out(c, (tagCRS,P_1,getPVSSEncKeyForParticipant(P_1),getVMSSPublicKeyForParticipant(P_1),getPublicKeyOfSign(ssk_1)));
+        {9}out(cparticipantRegistered, P_1)
+    ) | (
+        {10}in(cparticipantRegistered, =P);
+        {11}in(c, decision: bitstring);
+        {12}if (decision = tagCompromise) then
+            {13}event ParticipantStaticallyCompromisedByAdversary(P);
+            (
+                {14}out(c, getPVSSDecKeyForParticipant(P))
+            ) | (
+                {15}out(c, getVMSSPrivateKeyForParticipant(P))
+            ) | (
+                {16}out(c, ssk)
+            ) | (
+                {17}let D: participant = P in
+                {18}new badFeldman: bitstring;
+                {19}event MalformedPVSSByCompromisedDealer(D,badFeldman);
+                (
+                    {20}out(c, (tagPVSS,badFeldman))
+                ) | (
+                    {21}out(cpvssMalformedInternal, (D,badFeldman,failPVSSFeldman))
+                ) | (
+                    {22}new badEncryption: bitstring;
+                    {23}event MalformedPVSSByCompromisedDealer(D,badEncryption);
+                    (
+                        {24}out(c, (tagPVSS,badEncryption))
+                    ) | (
+                        {25}out(cpvssMalformedInternal, (D,badEncryption,failPVSSEncryption))
+                    ) | (
+                        {26}new badSameZ: bitstring;
+                        {27}event MalformedPVSSByCompromisedDealer(D,badSameZ);
+                        (
+                            {28}out(c, (tagPVSS,badSameZ))
+                        ) | (
+                            {29}out(cpvssMalformedInternal, (D,badSameZ,failPVSSSameZ))
+                        ) | (
+                            {30}new badSigma: bitstring;
+                            {31}event MalformedPVSSByCompromisedDealer(D,badSigma);
+                            (
+                                {32}out(c, (tagPVSS,badSigma))
+                            ) | (
+                                {33}out(cpvssMalformedInternal, (D,badSigma,failPVSSSigma))
+                            )
+                        )
+                    )
+                )
+            ) | (
+                {34}let D_1: participant = P in
+                {35}new badCommit: bitstring;
+                {36}event MalformedVMSSByCompromisedDealer(D_1,badCommit);
+                (
+                    {37}out(c, (tagVMSS,badCommit))
+                ) | (
+                    {38}out(ccompromisedVMSSComplaint, (D_1,badCommit))
+                ) | (
+                    {39}out(cvmssMalformedInternal, (D_1,badCommit,failVMSSCommitment))
+                ) | (
+                    {40}new badRecipient: bitstring;
+                    {41}event MalformedVMSSByCompromisedDealer(D_1,badRecipient);
+                    (
+                        {42}out(c, (tagVMSS,badRecipient))
+                    ) | (
+                        {43}out(ccompromisedVMSSComplaint, (D_1,badRecipient))
+                    ) | (
+                        {44}out(cvmssMalformedInternal, (D_1,badRecipient,failVMSSRecipient))
+                    ) | (
+                        {45}new badEquation: bitstring;
+                        {46}event MalformedVMSSByCompromisedDealer(D_1,badEquation);
+                        (
+                            {47}out(c, (tagVMSS,badEquation))
+                        ) | (
+                            {48}out(ccompromisedVMSSComplaint, (D_1,badEquation))
+                        ) | (
+                            {49}out(cvmssMalformedInternal, (D_1,badEquation,failVMSSEquation))
+                        )
+                    )
+                )
+            )
+        else
+            (
+                {50}let P_2: participant = P in
+                {51}let ssk_2: sigkey = ssk in
+                {52}new zi: scalar;
+                {53}new coeffs: coefficientVector;
+                {54}event ZContributionGenerated(P_2,zi);
+                {55}let hp: pvssPolynomial = constructPVSSPolynomial(zi,coeffs,degreeForThreshold(T)) in
+                {56}let Zi: group1 = exp1(g1,zi) in
+                {57}let Hvec: group1Vector = buildPVSSCoefficientCommitmentVector(hp) in
+                {58}let Avec: group1Vector = buildPVSSShareCommitmentVector(hp,CommitteeN) in
+                {59}let Yvec: group2Vector = buildPVSSEncryptedShareVector(hp,CommitteeN) in
+                {60}let Ui: group2 = commitZInG2(zi) in
+                {61}let Wi: weightVector = makeOneHotWeightVector(P_2,CommitteeN) in
+                {62}let Sig: cryptographicProof = sigma(proofKnowledgeZi(Zi,zi),proofBindingZiToParticipant(getPublicKeyOfSign(ssk_2),Zi,ssk_2)) in
+                {63}let SigVec: proofVector = makeDealerProofVector(P_2,Sig,CommitteeN) in
+                {64}let Tp: pvssTranscript = pvss(P_2,Zi,Hvec,Avec,Yvec,Ui,Wi,SigVec,Sig,getPublicKeyOfSign(ssk_2),T,CommitteeN) in
+                {65}event PVSSTranscriptCreated(P_2,Tp);
+                (
+                    {66}!
+                    {67}out(cpvssOrigin, (P_2,Tp))
+                ) | (
+                    {68}out(c, (tagPVSS,Tp))
+                )
+            ) | (
+                {69}let P_3: participant = P in
+                {70}new x1i: scalar;
+                {71}new x2i: scalar;
+                {72}new y1i: scalar;
+                {73}new y2i: scalar;
+                {74}new beta1: scalar;
+                {75}new beta2: scalar;
+                {76}new beta3: scalar;
+                {77}new beta4: scalar;
+                {78}new rhoF: randomness;
+                {79}new rhoFHat: randomness;
+                {80}new rhoG: randomness;
+                {81}new rhoGHat: randomness;
+                {82}out(cqualOneShotPermit, P_3);
+                {83}event VMSSSecretContributionsGenerated(P_3,x1i,x2i,y1i,y2i);
+                {84}event VMSSSecretGenerated(P_3,x1i);
+                {85}event VMSSSecretGenerated(P_3,x2i);
+                {86}event VMSSSecretGenerated(P_3,y1i);
+                {87}event VMSSSecretGenerated(P_3,y2i);
+                {88}let fp: vmsspolyF = makeVMSSPolynomialF(x1i,y1i,beta1,beta2,rhoF,rhoFHat,degreeForThreshold(T)) in
+                {89}let gp: vmsspolyG = makeVMSSPolynomialG(x2i,y2i,beta3,beta4,rhoG,rhoGHat,degreeForThreshold(T)) in
+                {90}let vp: vmsspoly = makeVMSSPolynomialState(fp,gp) in
+                {91}let E1: group1 = getCommitmentX1(vp) in
+                {92}let E2: group1 = getCommitmentY1(vp) in
+                {93}let E3: group1 = getCommitmentX2(vp) in
+                {94}let E4: group1 = getCommitmentY2(vp) in
+                {95}let CM: vmssCommitmentVector = getVMSSCoefficientCommitmentVector(vp) in
+                {96}let EV: encryptedVMSSVector = buildEncryptedVMSSShareVector(vp,CommitteeN) in
+                {97}let Tv: vmssTranscript = makeVMSSTranscript(P_3,E1,E2,E3,E4,CM,EV,T,CommitteeN) in
+                {98}event VMSSTranscriptCreated(P_3,Tv);
+                (
+                    {99}out(cvmssInternal, (P_3,Tv,vp,x1i,x2i,y1i,y2i))
+                ) | (
+                    {100}!
+                    {101}out(cvmssOrigin, (P_3,Tv))
+                ) | (
+                    {102}out(c, (tagVMSS,Tv))
+                )
+            ) | (
+                {103}!
+                {104}let V: participant = P in
+                {105}in(cpvssOrigin, (D_2: participant,Tp_1: pvssTranscript));
+                {106}if (getPVSSDealer(Tp_1) = D_2) then
+                {107}event PVSSOriginMatched(V,D_2,Tp_1);
+                {108}in(c, (=tagPVSS,=Tp_1));
+                {109}event PVSSPublicReceived(V,Tp_1);
+                {110}let FeldmanResult: status = verifyFeldmanVector(getPVSSZCommitment(Tp_1),getPVSSCoefficientCommitments(Tp_1),getPVSSShareCommitments(Tp_1)) in
+                {111}let EncryptionResult: status = verifyAllPVSSShareEncryptions(getPVSSShareCommitments(Tp_1),getPVSSEncryptedShares(Tp_1),CommitteeN) in
+                {112}let SameZResult: status = verifySameZExponent(getPVSSZCommitment(Tp_1),getPVSSZContributionG2(Tp_1)) in
+                {113}let SigmaResult: status = verifySigma(getPVSSKnowledgeSignature(Tp_1),getPVSSZCommitment(Tp_1),getPVSSVerificationKey(Tp_1)) in
+                {114}event PVSSVerificationCompleted(V,D_2,Tp_1,FeldmanResult,EncryptionResult,SameZResult,SigmaResult);
+                {115}if (verifyPVSS(FeldmanResult,EncryptionResult,SameZResult,SigmaResult) = ok) then
+                    {116}event PVSSFeldmanVerificationPassed(V,D_2,Tp_1);
+                    {117}event PVSSShareEncryptionVerificationPassed(V,D_2,Tp_1);
+                    {118}event PVSSSameZExponentVerificationPassed(V,D_2,Tp_1);
+                    {119}event PVSSSigmaVerificationPassed(V,D_2,Tp_1);
+                    {120}event PVSSTranscriptAccepted(V,D_2,Tp_1);
+                    (
+                        {121}!
+                        {122}out(cpvssAccepted, (V,D_2,Tp_1))
+                    ) | (
+                        {123}out(c, (tagPVSS,Tp_1))
+                    )
+                else
+                    {124}event PVSSTranscriptRejected(V,D_2,Tp_1);
+                    {125}event ParticipantAddedToQagg(D_2);
+                    {126}!
+                    {127}out(cqaggInserted, D_2)
+            ) | (
+                {128}!
+                {129}let V_1: participant = P in
+                {130}in(cpvssMalformedInternal, (D_3: participant,bad: bitstring,reason: bitstring));
+                {131}in(c, (=tagPVSS,=bad));
+                {132}if (reason = failPVSSFeldman) then
+                    {133}event PVSSFeldmanVerificationFailed(V_1,D_3,bad);
+                    {134}event PVSSMalformedRejected(V_1,D_3,bad);
+                    {135}event ParticipantAddedToQagg(D_3);
+                    {136}!
+                    {137}out(cqaggInserted, D_3)
+                else
+                    {138}if (reason = failPVSSEncryption) then
+                        {139}event PVSSEncryptedShareVerificationFailed(V_1,D_3,bad);
+                        {140}event PVSSMalformedRejected(V_1,D_3,bad);
+                        {141}event ParticipantAddedToQagg(D_3);
+                        {142}!
+                        {143}out(cqaggInserted, D_3)
+                    else
+                        {144}if (reason = failPVSSSameZ) then
+                            {145}event PVSSSameZExponentVerificationFailed(V_1,D_3,bad);
+                            {146}event PVSSMalformedRejected(V_1,D_3,bad);
+                            {147}event ParticipantAddedToQagg(D_3);
+                            {148}!
+                            {149}out(cqaggInserted, D_3)
+                        else
+                            {150}if (reason = failPVSSSigma) then
+                            {151}event PVSSSigmaVerificationFailed(V_1,D_3,bad);
+                            {152}event PVSSMalformedRejected(V_1,D_3,bad);
+                            {153}event ParticipantAddedToQagg(D_3);
+                            {154}!
+                            {155}out(cqaggInserted, D_3)
+            ) | (
+                {156}!
+                {157}let V_2: participant = P in
+                {158}in(cpvssAccepted, (=V_2,D1: participant,T1: pvssTranscript));
+                {159}in(cpvssAccepted, (=V_2,D2: participant,T2: pvssTranscript));
+                {160}if (D1 ≠ D2) then
+                {161}let A: pvssTranscript = aggregateTwoPVSSTranscripts(T1,T2) in
+                {162}if (verifyTwoPVSSTranscriptsAggregation(A,T1,T2) = ok) then
+                {163}event PVSSTranscriptsAggregated(V_2,A);
+                {164}event PVSSAggregateValidated(A);
+                (
+                    {165}out(caggVerified, A)
+                ) | (
+                    {166}out(caggForExtension, A)
+                ) | (
+                    {167}out(c, (tagAGG,A))
+                )
+            ) | (
+                {168}!
+                {169}let V_3: participant = P in
+                {170}in(caggForExtension, A0: pvssTranscript);
+                {171}in(cpvssAccepted, (=V_3,D_4: participant,Tp_2: pvssTranscript));
+                {172}let A1: pvssTranscript = aggregatePVSSWithAggregatedTranscript(A0,Tp_2) in
+                {173}if (verifyPVSSAdditionToAggregation(A1,A0,Tp_2) = ok) then
+                {174}event PVSSTranscriptsAggregated(V_3,A1);
+                {175}event PVSSAggregateValidated(A1);
+                (
+                    {176}out(caggVerified, A1)
+                ) | (
+                    {177}out(caggForExtension, A1)
+                ) | (
+                    {178}out(c, (tagAGG,A1))
+                )
+            ) | (
+                {179}!
+                {180}let V_4: participant = P in
+                {181}in(caggVerified, A_1: pvssTranscript);
+                {182}let WT: thresholdCertificat = makeThresholdCertificat(A_1,T) in
+                {183}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(A_1,T,WT) = ok) then
+                {184}event PVSSAggregateThresholdCheckPassed(V_4,A_1);
+                {185}event PVSSCandidateThresholdCertified(V_4,A_1);
+                {186}event PVSSCandidateCertified(A_1);
+                (
+                    {187}out(cthresholdCandidateInternal, (A_1,WT))
+                ) | (
+                    {188}out(cthresholdForComparison, (A_1,WT))
+                )
+            ) | (
+                {189}!
+                {190}let V_5: participant = P in
+                {191}in(cthresholdCandidateInternal, (A0_1: pvssTranscript,ThresholdCertificat0: thresholdCertificat));
+                {192}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(A0_1,T,ThresholdCertificat0) = ok) then
+                {193}let Rank0: selectionRank = getDealerSelectionRank(getAggregatedWeightVector(A0_1)) in
+                {194}event PVSSSelectionStateInitialized(V_5,A0_1);
+                (
+                    {195}out(cselectionInternal, (A0_1,Rank0))
+                ) | (
+                    {196}out(cselectionForFinalization, (A0_1,Rank0))
+                )
+            ) | (
+                {197}!
+                {198}let V_6: participant = P in
+                {199}in(cselectionInternal, (CurrentBest: pvssTranscript,CurrentRank: selectionRank));
+                {200}in(cthresholdForComparison, (NewCandidate: pvssTranscript,ThresholdCertificatN: thresholdCertificat));
+                {201}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(NewCandidate,T,ThresholdCertificatN) = ok) then
+                {202}let NewRank: selectionRank = getDealerSelectionRank(getAggregatedWeightVector(NewCandidate)) in
+                {203}let SelectedCandidate: pvssTranscript = chooseLowestBitCountCandidate(CurrentBest,NewCandidate,CurrentRank,NewRank) in
+                {204}let SelectionCertificat: selectionWitness = makeSelectionWitness(CurrentBest,NewCandidate,CurrentRank,NewRank,SelectedCandidate) in
+                {205}if (verifyLowestBitCountComparison(CurrentBest,NewCandidate,CurrentRank,NewRank,SelectedCandidate,SelectionCertificat) = ok) then
+                {206}let BestAfterComparisonStep: pvssTranscript = selectBestAggregatedCandidate(CurrentBest,NewCandidate,CurrentRank,NewRank,SelectionCertificat) in
+                {207}let BestRank: selectionRank = getDealerSelectionRank(getAggregatedWeightVector(BestAfterComparisonStep)) in
+                {208}event PVSSSelectionWitnessVerified(V_6,BestAfterComparisonStep);
+                {209}event PVSSLowestBitCandidateCertified(V_6,BestAfterComparisonStep);
+                {210}event PVSSCandidateSelectionPerformed(V_6,CurrentBest,NewCandidate,BestAfterComparisonStep);
+                {211}event PVSSSelectionStateUpdated(V_6,CurrentBest,NewCandidate,BestAfterComparisonStep);
+                (
+                    {212}out(cselectionInternal, (BestAfterComparisonStep,BestRank))
+                ) | (
+                    {213}out(cselectionForFinalization, (BestAfterComparisonStep,BestRank))
+                )
+            ) | (
+                {214}!
+                {215}let V_7: participant = P in
+                {216}in(cselectionForFinalization, (AggregatedFinalCandidate: pvssTranscript,LowestRank: selectionRank));
+                {217}let SelectionCompletionCertificate: selectionWitness = makeSelectionCompletionCertificate(AggregatedFinalCandidate,LowestRank,CommitteeN) in
+                {218}if (verifySelectionCompletionCertificate(AggregatedFinalCandidate,LowestRank,CommitteeN,SelectionCompletionCertificate) = ok) then
+                {219}let ThresholdCertificatF: thresholdCertificat = makeThresholdCertificat(AggregatedFinalCandidate,T) in
+                {220}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(AggregatedFinalCandidate,T,ThresholdCertificatF) = ok) then
+                {221}event PVSSSelectionCollectionCompleted(V_7,AggregatedFinalCandidate);
+                {222}event PVSSLowestBitCandidateCertified(V_7,AggregatedFinalCandidate);
+                {223}event PVSSSelectionWitnessVerified(V_7,AggregatedFinalCandidate);
+                {224}event FinalAggregatedPVSSTranscriptSelected(V_7,AggregatedFinalCandidate);
+                {225}event PVSSFinalAggregateSelected(AggregatedFinalCandidate);
+                {226}let SelectedC3: group1 = getAggregatedZCommitment(AggregatedFinalCandidate) in
+                {227}new SelectionAid: bitstring;
+                {228}event PVSSCommitmentSelected(SelectionAid,AggregatedFinalCandidate,SelectedC3);
+                {229}out(cthresholdInternal, (SelectionAid,AggregatedFinalCandidate,SelectedC3,ThresholdCertificatF));
+                {230}out(c, (tagFINALPVSS,AggregatedFinalCandidate))
+            ) | (
+                {231}!
+                {232}let V_8: participant = P in
+                {233}in(cthresholdInternal, (SelectionAid_1: bitstring,aggregatedPVSSTranscript1: pvssTranscript,SelectedC3_1: group1,ThresholdCertificat: thresholdCertificat));
+                {234}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(aggregatedPVSSTranscript1,T,ThresholdCertificat) = ok) then
+                {235}let ExtractedC3: group1 = getAggregatedZCommitment(aggregatedPVSSTranscript1) in
+                {236}if (SelectedC3_1 = ExtractedC3) then
+                {237}let Aagg: group1Vector = getAggregatedPVSSShareCommitments(aggregatedPVSSTranscript1) in
+                {238}let Yagg: group2Vector = getAggregatedPVSSEncryptedShares(aggregatedPVSSTranscript1) in
+                {239}let DecryptedZShares: group2Vector = decryptAggregatedZShareVector(Yagg,CommitteeN) in
+                {240}event AggregatedPVSSZSharesDecrypted(V_8,aggregatedPVSSTranscript1);
+                {241}if (verifyDecryptedAggregatedZShareVector(Aagg,DecryptedZShares) = ok) then
+                {242}event AggregatedPVSSZSharesVerifiedAgainstCommitments(V_8,aggregatedPVSSTranscript1);
+                {243}let ValidatedZShares: group2Vector = buildThresholdValidatedZShareSet(aggregatedPVSSTranscript1,DecryptedZShares,T,ThresholdCertificat) in
+                {244}event ValidatedZSharesCollected(V_8,aggregatedPVSSTranscript1);
+                {245}let ZG2: group2 = reconstructZFromValidatedShares(aggregatedPVSSTranscript1,ValidatedZShares,T) in
+                {246}event ZContributionReconstructed(V_8,ZG2);
+                {247}event ZReconstructedFromFinalPVSS(V_8,aggregatedPVSSTranscript1,ZG2);
+                {248}event V5PVSSCommitmentReconstructed(SelectionAid_1,aggregatedPVSSTranscript1,SelectedC3_1,ZG2);
+                {249}out(czInternal, (V_8,SelectionAid_1,ZG2,aggregatedPVSSTranscript1,SelectedC3_1))
+            ) | (
+                {250}!
+                {251}let Pj: participant = P in
+                {252}in(cvmssOrigin, (D_5: participant,transcript_j: vmssTranscript));
+                {253}if (vmssGetDealer(transcript_j) = D_5) then
+                {254}in(c, (=tagVMSS,=transcript_j));
+                {255}let encryptedVMSSShare: bitstring = getEncryptedVMSSShareForParticipant(vmssGetEncryptedShares(transcript_j),Pj) in
+                {256}let OwnShare: vmssshare = decVMSSShare(encryptedVMSSShare,getVMSSPrivateKeyForParticipant(Pj)) in
+                {257}event VMSSShareDecrypted(Pj,D_5,transcript_j);
+                {258}let sf_ij: scalar = getVMSSShareF(OwnShare) in
+                {259}let sfHat_ij: scalar = getVMSSShareFHat(OwnShare) in
+                {260}let sg_ij: scalar = getVMSSShareG(OwnShare) in
+                {261}let sgHat_ij: scalar = getVMSSShareGHat(OwnShare) in
+                {262}let LeftSide: group1 = computeVMSSShareEquationSide(OwnShare) in
+                {263}let RightSide: group1 = computeVMSSCommitmentEquationSide(vmssGetCoefficientCommitments(transcript_j),Pj) in
+                {264}if (verifyVMSSEquation(LeftSide,RightSide) = ok) then
+                    {265}event VMSSEquation1Verified(Pj,D_5,transcript_j);
+                    {266}event VMSSTranscriptAccepted(Pj,D_5,transcript_j);
+                    {267}event QUALDealerValidated(D_5,transcript_j);
+                    {268}event QUALDealerValidatedIdentity(D_5);
+                    {269}event DealerAddedToQUAL(D_5);
+                    {270}out(cqualInternal, (D_5,transcript_j,qualified))
+                else
+                    {271}event VMSSTranscriptRejected(Pj,D_5,transcript_j);
+                    {272}event VMSSComplaintRaised(Pj,D_5,transcript_j);
+                    (
+                        {273}out(ccomplaintRaised, (Pj,D_5,transcript_j))
+                    ) | (
+                        {274}out(ccomplaintForQagg, (Pj,D_5,transcript_j))
+                    ) | (
+                        {275}out(ccomplaintThresholdWitness, (D_5,Pj))
+                    ) | (
+                        {276}out(c, (tagCOMPLAINT,createVMSSComplaint(D_5,Pj,transcript_j)))
+                    )
+            ) | (
+                {277}!
+                {278}let V_9: participant = P in
+                {279}in(cvmssMalformedInternal, (D_6: participant,bad_1: bitstring,reason_1: bitstring));
+                {280}in(c, (=tagVMSS,=bad_1));
+                {281}if (reason_1 = failVMSSCommitment) then
+                    {282}event VMSSCommitmentVerificationFailed(V_9,D_6,bad_1);
+                    {283}event MalformedVMSSComplaintRaised(V_9,D_6,bad_1);
+                    (
+                        {284}out(cmalformedComplaintForQagg, (V_9,D_6,bad_1))
+                    ) | (
+                        {285}out(cmalformedComplaintThreshold, (D_6,V_9))
+                    )
+                else
+                    {286}if (reason_1 = failVMSSRecipient) then
+                        {287}event VMSSDecryptionVerificationFailed(V_9,D_6,bad_1);
+                        {288}event MalformedVMSSComplaintRaised(V_9,D_6,bad_1);
+                        (
+                            {289}out(cmalformedComplaintForQagg, (V_9,D_6,bad_1))
+                        ) | (
+                            {290}out(cmalformedComplaintThreshold, (D_6,V_9))
+                        )
+                    else
+                        {291}if (reason_1 = failVMSSEquation) then
+                        {292}event VMSSEquation1VerificationFailed(V_9,D_6,bad_1);
+                        {293}event MalformedVMSSComplaintRaised(V_9,D_6,bad_1);
+                        (
+                            {294}out(cmalformedComplaintForQagg, (V_9,D_6,bad_1))
+                        ) | (
+                            {295}out(cmalformedComplaintThreshold, (D_6,V_9))
+                        )
+            ) | (
+                {296}!
+                {297}let Pj_1: participant = P in
+                {298}in(cvmssRecoveryInternal, (Q: qualifiedSet,LastD: participant));
+                {299}let QW: thresholdCertificat = makeQUALThresholdCertificate(Q,T) in
+                {300}if (verifyQUALThresholdCertificateByVerificator(Q,T,QW) = ok) then
+                {301}event QUALSnapshotCertified(Pj_1,Q);
+                {302}event QUALUsedForRecovery(Pj_1,Q);
+                {303}let GS: vmssshare = buildQualifiedGlobalVMSSShare(Q,Pj_1,T) in
+                {304}event GlobalVMSSShareBuilt(Pj_1,Q,GS);
+                {305}let GW: thresholdCertificat = makeGlobalVMSSShareThresholdCertificate(Q,Pj_1,GS,T) in
+                {306}if (verifyGlobalVMSSShareThresholdCertificate(Q,Pj_1,GS,T,GW) = ok) then
+                {307}event VMSSGlobalShareThresholdCertified(Pj_1,Q);
+                {308}out(cfinalInternal, (tagQUAL,Pj_1,Q,GS,GW))
+            ) | (
+                {309}!
+                {310}let P_4: participant = P in
+                {311}in(czInternal, (Vr: participant,SelectionAid_2: bitstring,ZG2_1: group2,Afinal: pvssTranscript,SelectedC3_2: group1));
+                {312}in(cfinalInternal, (=tagQUAL,Pj_2: participant,QFinal: qualifiedSet,GS_1: vmssshare,GW_1: thresholdCertificat));
+                {313}if (verifyGlobalVMSSShareThresholdCertificate(QFinal,Pj_2,GS_1,T,GW_1) = ok) then
+                {314}let RW: vmssRecoveryWitness = makeVMSSRecoveryWitness(QFinal,Pj_2,GS_1,GW_1,T) in
+                {315}let VS: vmsssecrets = reconstructVMSSSecretsFromWitness(RW) in
+                {316}let X1: scalar = getRecoveredX1(VS) in
+                {317}let X2: scalar = getRecoveredX2(VS) in
+                {318}let Y1: scalar = getRecoveredY1(VS) in
+                {319}let Y2: scalar = getRecoveredY2(VS) in
+                {320}event VMSSSecretsReconstructedFromQUAL(P_4,QFinal,X1,X2,Y1,Y2);
+                {321}event FinalSecretComponentsReconstructed(P_4,X1,X2,Y1,Y2,ZG2_1);
+                {322}let C1: group1 = computePublicKeyComponentC1(X1,X2) in
+                {323}let C2: group1 = computePublicKeyComponentC2(Y1,Y2) in
+                {324}let C3: group1 = getAggregatedZCommitment(Afinal) in
+                {325}if (C3 = SelectedC3_2) then
+                {326}let SK: bitstring = makeFinalSecretKey(X1,X2,Y1,Y2,ZG2_1) in
+                {327}let PK: bitstring = makeFinalPublicKey(C1,C2,C3) in
+                {328}event V5PVSSCommitmentUsedInFinalKey(P_4,SelectionAid_2,Afinal,C3,ZG2_1);
+                {329}event FinalSecretKeyGenerated(P_4,SK);
+                {330}event FinalPublicKeyGenerated(P_4,PK);
+                {331}event FinalDMKGKeyPairGenerated(P_4,SK,PK,Afinal,ZG2_1);
+                {332}event FinalKeyPairReady(P_4);
+                {333}out(c, (tagPUBLICKEY,PK));
+                {334}out(cfinalInternal, (P_4,SK,PK))
+            )
+    )
+) | (
+    {335}in(cqualInternal, (D_7: participant,Tv_1: vmssTranscript,=qualified));
+    {336}in(cqualOneShotPermit, =D_7);
+    {345}get disqualifiedDealers(=D_7) in
+        0
+    else
+        {337}event QUALAdmissionChecked(D_7);
+        {338}let Q1: qualifiedSet = addDealerToQUAL(emptyQualifiedSet,D_7) in
+        {339}event QUALStateUpdated(Q1,D_7);
+        {340}event QUALDealerInserted(Q1,D_7);
+        {341}event QUALStatePublished(Q1);
+        (
+            {342}out(cqualStateInternal, (Q1,D_7))
+        ) | (
+            {343}out(cvmssRecoveryInternal, (Q1,D_7))
+        ) | (
+            {344}out(cqualStartedInternal, ())
+        )
+) | (
+    {346}!
+    {347}in(cqualStartedInternal, ());
+    {348}out(cqualStartedInternal, ());
+    {349}in(cqualInternal, (D_8: participant,Tv_2: vmssTranscript,=qualified));
+    {350}in(cqualOneShotPermit, =D_8);
+    {351}in(cqualStateInternal, (Q_1: qualifiedSet,LastD_1: participant));
+    {359}get disqualifiedDealers(=D_8) in
+        0
+    else
+        {352}event QUALAdmissionChecked(D_8);
+        {353}let Q1_1: qualifiedSet = addDealerToQUAL(Q_1,D_8) in
+        {354}event QUALStateUpdated(Q1_1,D_8);
+        {355}event QUALDealerInserted(Q1_1,D_8);
+        {356}event QUALStatePublished(Q1_1);
+        (
+            {357}out(cqualStateInternal, (Q1_1,D_8))
+        ) | (
+            {358}out(cvmssRecoveryInternal, (Q1_1,D_8))
+        )
+) | (
+    {360}!
+    {361}in(c, (=tagCOMPLAINT,Cp: complaint));
+    {362}let D_9: participant = getComplaintDealer(Cp) in
+    {363}let V_10: participant = getComplaintIssuer(Cp) in
+    {364}let Tv_3: vmssTranscript = getComplaintTranscript(Cp) in
+    {365}in(ccomplaintRaised, (=V_10,=D_9,=Tv_3));
+    {366}in(cvmssInternal, (=D_9,=Tv_3,vp_1: vmsspoly,x1d: scalar,x2d: scalar,y1d: scalar,y2d: scalar));
+    {367}let Expected: vmssshare = getVMSSShareForParticipant(vp_1,V_10) in
+    {368}let Pr: cryptographicProof = createVMSSDisputeProof(Cp,Expected) in
+    {369}event VMSSDisputeProofGenerated(D_9,V_10,Tv_3);
+    {370}if (verifyVMSSDisputeProof(Pr,Cp,Expected,getVMSSCoefficientCommitmentVector(vp_1)) = ok) then
+        {371}event VMSSDisputeProofVerified(V_10,D_9,Tv_3);
+        {372}event VMSSDisputeResolved(V_10,D_9,honest);
+        {373}event VMSSDealerValidated(V_10,D_9,Tv_3);
+        {374}event QUALDealerValidated(D_9,Tv_3);
+        {375}event QUALDealerValidatedIdentity(D_9);
+        {376}event DealerAddedToQUAL(D_9);
+        {377}out(cqualInternal, (D_9,Tv_3,qualified))
+    else
+        {378}event VMSSDisputeResolved(V_10,D_9,dishonest);
+        {379}event VMSSDealerDisqualified(D_9);
+        {380}insert disqualifiedDealers(D_9);
+        {381}out(cqualInternal, (D_9,Tv_3,disqualified))
+) | (
+    {382}!
+    {383}in(ccompromisedVMSSComplaint, (D_10: participant,bad_2: bitstring));
+    {384}event VMSSDealerDisqualified(D_10);
+    {385}insert disqualifiedDealers(D_10);
+    {386}event VMSSDealerDisqualifiedAfterComplaint(D_10,D_10)
+) | (
+    {387}!
+    {388}in(ccomplaintThresholdWitness, (D_11: participant,V_11: participant));
+    {389}event ComplaintThresholdReached(D_11);
+    {390}event VMSSDisputeResolved(V_11,D_11,dishonest);
+    {391}event VMSSDealerDisqualified(D_11);
+    {392}insert disqualifiedDealers(D_11)
+) | (
+    {393}!
+    {394}in(ccomplaintForQagg, (V_12: participant,D_12: participant,Tv_4: vmssTranscript));
+    {395}in(cqaggInserted, =D_12);
+    {396}event ComplaintAgainstDealerAlreadyInQagg(V_12,D_12);
+    {397}event VMSSDisputeResolved(V_12,D_12,dishonest);
+    {398}event VMSSDealerDisqualified(D_12);
+    {399}insert disqualifiedDealers(D_12)
+) | (
+    {400}!
+    {401}in(cmalformedComplaintForQagg, (V_13: participant,D_13: participant,bad_3: bitstring));
+    {402}in(cqaggInserted, =D_13);
+    {403}event MalformedComplaintAgainstDealerAlreadyInQagg(V_13,D_13,bad_3);
+    {404}event VMSSDealerDisqualified(D_13);
+    {405}insert disqualifiedDealers(D_13)
+) | (
+    {406}!
+    {407}in(cmalformedComplaintThreshold, (D_14: participant,V_14: participant));
+    {408}event ComplaintThresholdReached(D_14);
+    {409}event VMSSDealerDisqualified(D_14);
+    {410}insert disqualifiedDealers(D_14)
+)
+
+--  Process 1 (that is, process 0, with let moved downwards):
+(
+    {1}!
+    {2}new P: participant;
+    {3}new ssk: sigkey;
+    (
+        {4}let P_1: participant = P in
+        {6}if (participantInSet(P_1,CommitteeN) = ok) then
+        {7}event ParticipantRegistered(P_1);
+        {5}let ssk_1: sigkey = ssk in
+        {8}out(c, (tagCRS,P_1,getPVSSEncKeyForParticipant(P_1),getVMSSPublicKeyForParticipant(P_1),getPublicKeyOfSign(ssk_1)));
+        {9}out(cparticipantRegistered, P_1)
+    ) | (
+        {10}in(cparticipantRegistered, =P);
+        {11}in(c, decision: bitstring);
+        {12}if (decision = tagCompromise) then
+            {13}event ParticipantStaticallyCompromisedByAdversary(P);
+            (
+                {14}out(c, getPVSSDecKeyForParticipant(P))
+            ) | (
+                {15}out(c, getVMSSPrivateKeyForParticipant(P))
+            ) | (
+                {16}out(c, ssk)
+            ) | (
+                {18}new badFeldman: bitstring;
+                {17}let D: participant = P in
+                {19}event MalformedPVSSByCompromisedDealer(D,badFeldman);
+                (
+                    {20}out(c, (tagPVSS,badFeldman))
+                ) | (
+                    {21}out(cpvssMalformedInternal, (D,badFeldman,failPVSSFeldman))
+                ) | (
+                    {22}new badEncryption: bitstring;
+                    {23}event MalformedPVSSByCompromisedDealer(D,badEncryption);
+                    (
+                        {24}out(c, (tagPVSS,badEncryption))
+                    ) | (
+                        {25}out(cpvssMalformedInternal, (D,badEncryption,failPVSSEncryption))
+                    ) | (
+                        {26}new badSameZ: bitstring;
+                        {27}event MalformedPVSSByCompromisedDealer(D,badSameZ);
+                        (
+                            {28}out(c, (tagPVSS,badSameZ))
+                        ) | (
+                            {29}out(cpvssMalformedInternal, (D,badSameZ,failPVSSSameZ))
+                        ) | (
+                            {30}new badSigma: bitstring;
+                            {31}event MalformedPVSSByCompromisedDealer(D,badSigma);
+                            (
+                                {32}out(c, (tagPVSS,badSigma))
+                            ) | (
+                                {33}out(cpvssMalformedInternal, (D,badSigma,failPVSSSigma))
+                            )
+                        )
+                    )
+                )
+            ) | (
+                {35}new badCommit: bitstring;
+                {34}let D_1: participant = P in
+                {36}event MalformedVMSSByCompromisedDealer(D_1,badCommit);
+                (
+                    {37}out(c, (tagVMSS,badCommit))
+                ) | (
+                    {38}out(ccompromisedVMSSComplaint, (D_1,badCommit))
+                ) | (
+                    {39}out(cvmssMalformedInternal, (D_1,badCommit,failVMSSCommitment))
+                ) | (
+                    {40}new badRecipient: bitstring;
+                    {41}event MalformedVMSSByCompromisedDealer(D_1,badRecipient);
+                    (
+                        {42}out(c, (tagVMSS,badRecipient))
+                    ) | (
+                        {43}out(ccompromisedVMSSComplaint, (D_1,badRecipient))
+                    ) | (
+                        {44}out(cvmssMalformedInternal, (D_1,badRecipient,failVMSSRecipient))
+                    ) | (
+                        {45}new badEquation: bitstring;
+                        {46}event MalformedVMSSByCompromisedDealer(D_1,badEquation);
+                        (
+                            {47}out(c, (tagVMSS,badEquation))
+                        ) | (
+                            {48}out(ccompromisedVMSSComplaint, (D_1,badEquation))
+                        ) | (
+                            {49}out(cvmssMalformedInternal, (D_1,badEquation,failVMSSEquation))
+                        )
+                    )
+                )
+            )
+        else
+            (
+                {52}new zi: scalar;
+                {53}new coeffs: coefficientVector;
+                {50}let P_2: participant = P in
+                {54}event ZContributionGenerated(P_2,zi);
+                {56}let Zi: group1 = exp1(g1,zi) in
+                {51}let ssk_2: sigkey = ssk in
+                {62}let Sig: cryptographicProof = sigma(proofKnowledgeZi(Zi,zi),proofBindingZiToParticipant(getPublicKeyOfSign(ssk_2),Zi,ssk_2)) in
+                {63}let SigVec: proofVector = makeDealerProofVector(P_2,Sig,CommitteeN) in
+                {61}let Wi: weightVector = makeOneHotWeightVector(P_2,CommitteeN) in
+                {60}let Ui: group2 = commitZInG2(zi) in
+                {55}let hp: pvssPolynomial = constructPVSSPolynomial(zi,coeffs,degreeForThreshold(T)) in
+                {59}let Yvec: group2Vector = buildPVSSEncryptedShareVector(hp,CommitteeN) in
+                {58}let Avec: group1Vector = buildPVSSShareCommitmentVector(hp,CommitteeN) in
+                {57}let Hvec: group1Vector = buildPVSSCoefficientCommitmentVector(hp) in
+                {64}let Tp: pvssTranscript = pvss(P_2,Zi,Hvec,Avec,Yvec,Ui,Wi,SigVec,Sig,getPublicKeyOfSign(ssk_2),T,CommitteeN) in
+                {65}event PVSSTranscriptCreated(P_2,Tp);
+                (
+                    {66}!
+                    {67}out(cpvssOrigin, (P_2,Tp))
+                ) | (
+                    {68}out(c, (tagPVSS,Tp))
+                )
+            ) | (
+                {70}new x1i: scalar;
+                {71}new x2i: scalar;
+                {72}new y1i: scalar;
+                {73}new y2i: scalar;
+                {74}new beta1: scalar;
+                {75}new beta2: scalar;
+                {76}new beta3: scalar;
+                {77}new beta4: scalar;
+                {78}new rhoF: randomness;
+                {79}new rhoFHat: randomness;
+                {80}new rhoG: randomness;
+                {81}new rhoGHat: randomness;
+                {69}let P_3: participant = P in
+                {82}out(cqualOneShotPermit, P_3);
+                {83}event VMSSSecretContributionsGenerated(P_3,x1i,x2i,y1i,y2i);
+                {84}event VMSSSecretGenerated(P_3,x1i);
+                {85}event VMSSSecretGenerated(P_3,x2i);
+                {86}event VMSSSecretGenerated(P_3,y1i);
+                {87}event VMSSSecretGenerated(P_3,y2i);
+                {89}let gp: vmsspolyG = makeVMSSPolynomialG(x2i,y2i,beta3,beta4,rhoG,rhoGHat,degreeForThreshold(T)) in
+                {88}let fp: vmsspolyF = makeVMSSPolynomialF(x1i,y1i,beta1,beta2,rhoF,rhoFHat,degreeForThreshold(T)) in
+                {90}let vp: vmsspoly = makeVMSSPolynomialState(fp,gp) in
+                {95}let CM: vmssCommitmentVector = getVMSSCoefficientCommitmentVector(vp) in
+                {96}let EV: encryptedVMSSVector = buildEncryptedVMSSShareVector(vp,CommitteeN) in
+                {94}let E4: group1 = getCommitmentY2(vp) in
+                {93}let E3: group1 = getCommitmentX2(vp) in
+                {92}let E2: group1 = getCommitmentY1(vp) in
+                {91}let E1: group1 = getCommitmentX1(vp) in
+                {97}let Tv: vmssTranscript = makeVMSSTranscript(P_3,E1,E2,E3,E4,CM,EV,T,CommitteeN) in
+                {98}event VMSSTranscriptCreated(P_3,Tv);
+                (
+                    {99}out(cvmssInternal, (P_3,Tv,vp,x1i,x2i,y1i,y2i))
+                ) | (
+                    {100}!
+                    {101}out(cvmssOrigin, (P_3,Tv))
+                ) | (
+                    {102}out(c, (tagVMSS,Tv))
+                )
+            ) | (
+                {103}!
+                {105}in(cpvssOrigin, (D_2: participant,Tp_1: pvssTranscript));
+                {106}if (getPVSSDealer(Tp_1) = D_2) then
+                {104}let V: participant = P in
+                {107}event PVSSOriginMatched(V,D_2,Tp_1);
+                {108}in(c, (=tagPVSS,=Tp_1));
+                {109}event PVSSPublicReceived(V,Tp_1);
+                {110}let FeldmanResult: status = verifyFeldmanVector(getPVSSZCommitment(Tp_1),getPVSSCoefficientCommitments(Tp_1),getPVSSShareCommitments(Tp_1)) in
+                {111}let EncryptionResult: status = verifyAllPVSSShareEncryptions(getPVSSShareCommitments(Tp_1),getPVSSEncryptedShares(Tp_1),CommitteeN) in
+                {112}let SameZResult: status = verifySameZExponent(getPVSSZCommitment(Tp_1),getPVSSZContributionG2(Tp_1)) in
+                {113}let SigmaResult: status = verifySigma(getPVSSKnowledgeSignature(Tp_1),getPVSSZCommitment(Tp_1),getPVSSVerificationKey(Tp_1)) in
+                {114}event PVSSVerificationCompleted(V,D_2,Tp_1,FeldmanResult,EncryptionResult,SameZResult,SigmaResult);
+                {115}if (verifyPVSS(FeldmanResult,EncryptionResult,SameZResult,SigmaResult) = ok) then
+                    {116}event PVSSFeldmanVerificationPassed(V,D_2,Tp_1);
+                    {117}event PVSSShareEncryptionVerificationPassed(V,D_2,Tp_1);
+                    {118}event PVSSSameZExponentVerificationPassed(V,D_2,Tp_1);
+                    {119}event PVSSSigmaVerificationPassed(V,D_2,Tp_1);
+                    {120}event PVSSTranscriptAccepted(V,D_2,Tp_1);
+                    (
+                        {121}!
+                        {122}out(cpvssAccepted, (V,D_2,Tp_1))
+                    ) | (
+                        {123}out(c, (tagPVSS,Tp_1))
+                    )
+                else
+                    {124}event PVSSTranscriptRejected(V,D_2,Tp_1);
+                    {125}event ParticipantAddedToQagg(D_2);
+                    {126}!
+                    {127}out(cqaggInserted, D_2)
+            ) | (
+                {128}!
+                {130}in(cpvssMalformedInternal, (D_3: participant,bad: bitstring,reason: bitstring));
+                {131}in(c, (=tagPVSS,=bad));
+                {129}let V_1: participant = P in
+                {132}if (reason = failPVSSFeldman) then
+                    {133}event PVSSFeldmanVerificationFailed(V_1,D_3,bad);
+                    {134}event PVSSMalformedRejected(V_1,D_3,bad);
+                    {135}event ParticipantAddedToQagg(D_3);
+                    {136}!
+                    {137}out(cqaggInserted, D_3)
+                else
+                    {138}if (reason = failPVSSEncryption) then
+                        {139}event PVSSEncryptedShareVerificationFailed(V_1,D_3,bad);
+                        {140}event PVSSMalformedRejected(V_1,D_3,bad);
+                        {141}event ParticipantAddedToQagg(D_3);
+                        {142}!
+                        {143}out(cqaggInserted, D_3)
+                    else
+                        {144}if (reason = failPVSSSameZ) then
+                            {145}event PVSSSameZExponentVerificationFailed(V_1,D_3,bad);
+                            {146}event PVSSMalformedRejected(V_1,D_3,bad);
+                            {147}event ParticipantAddedToQagg(D_3);
+                            {148}!
+                            {149}out(cqaggInserted, D_3)
+                        else
+                            {150}if (reason = failPVSSSigma) then
+                            {151}event PVSSSigmaVerificationFailed(V_1,D_3,bad);
+                            {152}event PVSSMalformedRejected(V_1,D_3,bad);
+                            {153}event ParticipantAddedToQagg(D_3);
+                            {154}!
+                            {155}out(cqaggInserted, D_3)
+            ) | (
+                {156}!
+                {157}let V_2: participant = P in
+                {158}in(cpvssAccepted, (=V_2,D1: participant,T1: pvssTranscript));
+                {159}in(cpvssAccepted, (=V_2,D2: participant,T2: pvssTranscript));
+                {160}if (D1 ≠ D2) then
+                {161}let A: pvssTranscript = aggregateTwoPVSSTranscripts(T1,T2) in
+                {162}if (verifyTwoPVSSTranscriptsAggregation(A,T1,T2) = ok) then
+                {163}event PVSSTranscriptsAggregated(V_2,A);
+                {164}event PVSSAggregateValidated(A);
+                (
+                    {165}out(caggVerified, A)
+                ) | (
+                    {166}out(caggForExtension, A)
+                ) | (
+                    {167}out(c, (tagAGG,A))
+                )
+            ) | (
+                {168}!
+                {170}in(caggForExtension, A0: pvssTranscript);
+                {169}let V_3: participant = P in
+                {171}in(cpvssAccepted, (=V_3,D_4: participant,Tp_2: pvssTranscript));
+                {172}let A1: pvssTranscript = aggregatePVSSWithAggregatedTranscript(A0,Tp_2) in
+                {173}if (verifyPVSSAdditionToAggregation(A1,A0,Tp_2) = ok) then
+                {174}event PVSSTranscriptsAggregated(V_3,A1);
+                {175}event PVSSAggregateValidated(A1);
+                (
+                    {176}out(caggVerified, A1)
+                ) | (
+                    {177}out(caggForExtension, A1)
+                ) | (
+                    {178}out(c, (tagAGG,A1))
+                )
+            ) | (
+                {179}!
+                {181}in(caggVerified, A_1: pvssTranscript);
+                {182}let WT: thresholdCertificat = makeThresholdCertificat(A_1,T) in
+                {183}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(A_1,T,WT) = ok) then
+                {180}let V_4: participant = P in
+                {184}event PVSSAggregateThresholdCheckPassed(V_4,A_1);
+                {185}event PVSSCandidateThresholdCertified(V_4,A_1);
+                {186}event PVSSCandidateCertified(A_1);
+                (
+                    {187}out(cthresholdCandidateInternal, (A_1,WT))
+                ) | (
+                    {188}out(cthresholdForComparison, (A_1,WT))
+                )
+            ) | (
+                {189}!
+                {191}in(cthresholdCandidateInternal, (A0_1: pvssTranscript,ThresholdCertificat0: thresholdCertificat));
+                {192}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(A0_1,T,ThresholdCertificat0) = ok) then
+                {193}let Rank0: selectionRank = getDealerSelectionRank(getAggregatedWeightVector(A0_1)) in
+                {190}let V_5: participant = P in
+                {194}event PVSSSelectionStateInitialized(V_5,A0_1);
+                (
+                    {195}out(cselectionInternal, (A0_1,Rank0))
+                ) | (
+                    {196}out(cselectionForFinalization, (A0_1,Rank0))
+                )
+            ) | (
+                {197}!
+                {199}in(cselectionInternal, (CurrentBest: pvssTranscript,CurrentRank: selectionRank));
+                {200}in(cthresholdForComparison, (NewCandidate: pvssTranscript,ThresholdCertificatN: thresholdCertificat));
+                {201}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(NewCandidate,T,ThresholdCertificatN) = ok) then
+                {202}let NewRank: selectionRank = getDealerSelectionRank(getAggregatedWeightVector(NewCandidate)) in
+                {203}let SelectedCandidate: pvssTranscript = chooseLowestBitCountCandidate(CurrentBest,NewCandidate,CurrentRank,NewRank) in
+                {204}let SelectionCertificat: selectionWitness = makeSelectionWitness(CurrentBest,NewCandidate,CurrentRank,NewRank,SelectedCandidate) in
+                {205}if (verifyLowestBitCountComparison(CurrentBest,NewCandidate,CurrentRank,NewRank,SelectedCandidate,SelectionCertificat) = ok) then
+                {206}let BestAfterComparisonStep: pvssTranscript = selectBestAggregatedCandidate(CurrentBest,NewCandidate,CurrentRank,NewRank,SelectionCertificat) in
+                {207}let BestRank: selectionRank = getDealerSelectionRank(getAggregatedWeightVector(BestAfterComparisonStep)) in
+                {198}let V_6: participant = P in
+                {208}event PVSSSelectionWitnessVerified(V_6,BestAfterComparisonStep);
+                {209}event PVSSLowestBitCandidateCertified(V_6,BestAfterComparisonStep);
+                {210}event PVSSCandidateSelectionPerformed(V_6,CurrentBest,NewCandidate,BestAfterComparisonStep);
+                {211}event PVSSSelectionStateUpdated(V_6,CurrentBest,NewCandidate,BestAfterComparisonStep);
+                (
+                    {212}out(cselectionInternal, (BestAfterComparisonStep,BestRank))
+                ) | (
+                    {213}out(cselectionForFinalization, (BestAfterComparisonStep,BestRank))
+                )
+            ) | (
+                {214}!
+                {216}in(cselectionForFinalization, (AggregatedFinalCandidate: pvssTranscript,LowestRank: selectionRank));
+                {217}let SelectionCompletionCertificate: selectionWitness = makeSelectionCompletionCertificate(AggregatedFinalCandidate,LowestRank,CommitteeN) in
+                {218}if (verifySelectionCompletionCertificate(AggregatedFinalCandidate,LowestRank,CommitteeN,SelectionCompletionCertificate) = ok) then
+                {219}let ThresholdCertificatF: thresholdCertificat = makeThresholdCertificat(AggregatedFinalCandidate,T) in
+                {220}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(AggregatedFinalCandidate,T,ThresholdCertificatF) = ok) then
+                {215}let V_7: participant = P in
+                {221}event PVSSSelectionCollectionCompleted(V_7,AggregatedFinalCandidate);
+                {222}event PVSSLowestBitCandidateCertified(V_7,AggregatedFinalCandidate);
+                {223}event PVSSSelectionWitnessVerified(V_7,AggregatedFinalCandidate);
+                {224}event FinalAggregatedPVSSTranscriptSelected(V_7,AggregatedFinalCandidate);
+                {225}event PVSSFinalAggregateSelected(AggregatedFinalCandidate);
+                {226}let SelectedC3: group1 = getAggregatedZCommitment(AggregatedFinalCandidate) in
+                {227}new SelectionAid: bitstring;
+                {228}event PVSSCommitmentSelected(SelectionAid,AggregatedFinalCandidate,SelectedC3);
+                {229}out(cthresholdInternal, (SelectionAid,AggregatedFinalCandidate,SelectedC3,ThresholdCertificatF));
+                {230}out(c, (tagFINALPVSS,AggregatedFinalCandidate))
+            ) | (
+                {231}!
+                {233}in(cthresholdInternal, (SelectionAid_1: bitstring,aggregatedPVSSTranscript1: pvssTranscript,SelectedC3_1: group1,ThresholdCertificat: thresholdCertificat));
+                {234}if (IsGivenCertificatMatchThresholdTandAggregatedTranscript(aggregatedPVSSTranscript1,T,ThresholdCertificat) = ok) then
+                {235}let ExtractedC3: group1 = getAggregatedZCommitment(aggregatedPVSSTranscript1) in
+                {236}if (SelectedC3_1 = ExtractedC3) then
+                {237}let Aagg: group1Vector = getAggregatedPVSSShareCommitments(aggregatedPVSSTranscript1) in
+                {238}let Yagg: group2Vector = getAggregatedPVSSEncryptedShares(aggregatedPVSSTranscript1) in
+                {232}let V_8: participant = P in
+                {240}event AggregatedPVSSZSharesDecrypted(V_8,aggregatedPVSSTranscript1);
+                {239}let DecryptedZShares: group2Vector = decryptAggregatedZShareVector(Yagg,CommitteeN) in
+                {241}if (verifyDecryptedAggregatedZShareVector(Aagg,DecryptedZShares) = ok) then
+                {242}event AggregatedPVSSZSharesVerifiedAgainstCommitments(V_8,aggregatedPVSSTranscript1);
+                {244}event ValidatedZSharesCollected(V_8,aggregatedPVSSTranscript1);
+                {243}let ValidatedZShares: group2Vector = buildThresholdValidatedZShareSet(aggregatedPVSSTranscript1,DecryptedZShares,T,ThresholdCertificat) in
+                {245}let ZG2: group2 = reconstructZFromValidatedShares(aggregatedPVSSTranscript1,ValidatedZShares,T) in
+                {246}event ZContributionReconstructed(V_8,ZG2);
+                {247}event ZReconstructedFromFinalPVSS(V_8,aggregatedPVSSTranscript1,ZG2);
+                {248}event V5PVSSCommitmentReconstructed(SelectionAid_1,aggregatedPVSSTranscript1,SelectedC3_1,ZG2);
+                {249}out(czInternal, (V_8,SelectionAid_1,ZG2,aggregatedPVSSTranscript1,SelectedC3_1))
+            ) | (
+                {250}!
+                {252}in(cvmssOrigin, (D_5: participant,transcript_j: vmssTranscript));
+                {253}if (vmssGetDealer(transcript_j) = D_5) then
+                {254}in(c, (=tagVMSS,=transcript_j));
+                {251}let Pj: participant = P in
+                {255}let encryptedVMSSShare: bitstring = getEncryptedVMSSShareForParticipant(vmssGetEncryptedShares(transcript_j),Pj) in
+                {256}let OwnShare: vmssshare = decVMSSShare(encryptedVMSSShare,getVMSSPrivateKeyForParticipant(Pj)) in
+                {257}event VMSSShareDecrypted(Pj,D_5,transcript_j);
+                {258}let sf_ij: scalar = getVMSSShareF(OwnShare) in
+                {259}let sfHat_ij: scalar = getVMSSShareFHat(OwnShare) in
+                {260}let sg_ij: scalar = getVMSSShareG(OwnShare) in
+                {261}let sgHat_ij: scalar = getVMSSShareGHat(OwnShare) in
+                {262}let LeftSide: group1 = computeVMSSShareEquationSide(OwnShare) in
+                {263}let RightSide: group1 = computeVMSSCommitmentEquationSide(vmssGetCoefficientCommitments(transcript_j),Pj) in
+                {264}if (verifyVMSSEquation(LeftSide,RightSide) = ok) then
+                    {265}event VMSSEquation1Verified(Pj,D_5,transcript_j);
+                    {266}event VMSSTranscriptAccepted(Pj,D_5,transcript_j);
+                    {267}event QUALDealerValidated(D_5,transcript_j);
+                    {268}event QUALDealerValidatedIdentity(D_5);
+                    {269}event DealerAddedToQUAL(D_5);
+                    {270}out(cqualInternal, (D_5,transcript_j,qualified))
+                else
+                    {271}event VMSSTranscriptRejected(Pj,D_5,transcript_j);
+                    {272}event VMSSComplaintRaised(Pj,D_5,transcript_j);
+                    (
+                        {273}out(ccomplaintRaised, (Pj,D_5,transcript_j))
+                    ) | (
+                        {274}out(ccomplaintForQagg, (Pj,D_5,transcript_j))
+                    ) | (
+                        {275}out(ccomplaintThresholdWitness, (D_5,Pj))
+                    ) | (
+                        {276}out(c, (tagCOMPLAINT,createVMSSComplaint(D_5,Pj,transcript_j)))
+                    )
+            ) | (
+                {277}!
+                {279}in(cvmssMalformedInternal, (D_6: participant,bad_1: bitstring,reason_1: bitstring));
+                {280}in(c, (=tagVMSS,=bad_1));
+                {278}let V_9: participant = P in
+                {281}if (reason_1 = failVMSSCommitment) then
+                    {282}event VMSSCommitmentVerificationFailed(V_9,D_6,bad_1);
+                    {283}event MalformedVMSSComplaintRaised(V_9,D_6,bad_1);
+                    (
+                        {284}out(cmalformedComplaintForQagg, (V_9,D_6,bad_1))
+                    ) | (
+                        {285}out(cmalformedComplaintThreshold, (D_6,V_9))
+                    )
+                else
+                    {286}if (reason_1 = failVMSSRecipient) then
+                        {287}event VMSSDecryptionVerificationFailed(V_9,D_6,bad_1);
+                        {288}event MalformedVMSSComplaintRaised(V_9,D_6,bad_1);
+                        (
+                            {289}out(cmalformedComplaintForQagg, (V_9,D_6,bad_1))
+                        ) | (
+                            {290}out(cmalformedComplaintThreshold, (D_6,V_9))
+                        )
+                    else
+                        {291}if (reason_1 = failVMSSEquation) then
+                        {292}event VMSSEquation1VerificationFailed(V_9,D_6,bad_1);
+                        {293}event MalformedVMSSComplaintRaised(V_9,D_6,bad_1);
+                        (
+                            {294}out(cmalformedComplaintForQagg, (V_9,D_6,bad_1))
+                        ) | (
+                            {295}out(cmalformedComplaintThreshold, (D_6,V_9))
+                        )
+            ) | (
+                {296}!
+                {298}in(cvmssRecoveryInternal, (Q: qualifiedSet,LastD: participant));
+                {299}let QW: thresholdCertificat = makeQUALThresholdCertificate(Q,T) in
+                {300}if (verifyQUALThresholdCertificateByVerificator(Q,T,QW) = ok) then
+                {297}let Pj_1: participant = P in
+                {301}event QUALSnapshotCertified(Pj_1,Q);
+                {302}event QUALUsedForRecovery(Pj_1,Q);
+                {303}let GS: vmssshare = buildQualifiedGlobalVMSSShare(Q,Pj_1,T) in
+                {304}event GlobalVMSSShareBuilt(Pj_1,Q,GS);
+                {305}let GW: thresholdCertificat = makeGlobalVMSSShareThresholdCertificate(Q,Pj_1,GS,T) in
+                {306}if (verifyGlobalVMSSShareThresholdCertificate(Q,Pj_1,GS,T,GW) = ok) then
+                {307}event VMSSGlobalShareThresholdCertified(Pj_1,Q);
+                {308}out(cfinalInternal, (tagQUAL,Pj_1,Q,GS,GW))
+            ) | (
+                {309}!
+                {311}in(czInternal, (Vr: participant,SelectionAid_2: bitstring,ZG2_1: group2,Afinal: pvssTranscript,SelectedC3_2: group1));
+                {312}in(cfinalInternal, (=tagQUAL,Pj_2: participant,QFinal: qualifiedSet,GS_1: vmssshare,GW_1: thresholdCertificat));
+                {313}if (verifyGlobalVMSSShareThresholdCertificate(QFinal,Pj_2,GS_1,T,GW_1) = ok) then
+                {314}let RW: vmssRecoveryWitness = makeVMSSRecoveryWitness(QFinal,Pj_2,GS_1,GW_1,T) in
+                {315}let VS: vmsssecrets = reconstructVMSSSecretsFromWitness(RW) in
+                {316}let X1: scalar = getRecoveredX1(VS) in
+                {317}let X2: scalar = getRecoveredX2(VS) in
+                {318}let Y1: scalar = getRecoveredY1(VS) in
+                {319}let Y2: scalar = getRecoveredY2(VS) in
+                {310}let P_4: participant = P in
+                {320}event VMSSSecretsReconstructedFromQUAL(P_4,QFinal,X1,X2,Y1,Y2);
+                {321}event FinalSecretComponentsReconstructed(P_4,X1,X2,Y1,Y2,ZG2_1);
+                {324}let C3: group1 = getAggregatedZCommitment(Afinal) in
+                {325}if (C3 = SelectedC3_2) then
+                {328}event V5PVSSCommitmentUsedInFinalKey(P_4,SelectionAid_2,Afinal,C3,ZG2_1);
+                {326}let SK: bitstring = makeFinalSecretKey(X1,X2,Y1,Y2,ZG2_1) in
+                {329}event FinalSecretKeyGenerated(P_4,SK);
+                {323}let C2: group1 = computePublicKeyComponentC2(Y1,Y2) in
+                {322}let C1: group1 = computePublicKeyComponentC1(X1,X2) in
+                {327}let PK: bitstring = makeFinalPublicKey(C1,C2,C3) in
+                {330}event FinalPublicKeyGenerated(P_4,PK);
+                {331}event FinalDMKGKeyPairGenerated(P_4,SK,PK,Afinal,ZG2_1);
+                {332}event FinalKeyPairReady(P_4);
+                {333}out(c, (tagPUBLICKEY,PK));
+                {334}out(cfinalInternal, (P_4,SK,PK))
+            )
+    )
+) | (
+    {335}in(cqualInternal, (D_7: participant,Tv_1: vmssTranscript,=qualified));
+    {336}in(cqualOneShotPermit, =D_7);
+    {345}get disqualifiedDealers(=D_7) in
+        0
+    else
+        {337}event QUALAdmissionChecked(D_7);
+        {338}let Q1: qualifiedSet = addDealerToQUAL(emptyQualifiedSet,D_7) in
+        {339}event QUALStateUpdated(Q1,D_7);
+        {340}event QUALDealerInserted(Q1,D_7);
+        {341}event QUALStatePublished(Q1);
+        (
+            {342}out(cqualStateInternal, (Q1,D_7))
+        ) | (
+            {343}out(cvmssRecoveryInternal, (Q1,D_7))
+        ) | (
+            {344}out(cqualStartedInternal, ())
+        )
+) | (
+    {346}!
+    {347}in(cqualStartedInternal, ());
+    {348}out(cqualStartedInternal, ());
+    {349}in(cqualInternal, (D_8: participant,Tv_2: vmssTranscript,=qualified));
+    {350}in(cqualOneShotPermit, =D_8);
+    {351}in(cqualStateInternal, (Q_1: qualifiedSet,LastD_1: participant));
+    {359}get disqualifiedDealers(=D_8) in
+        0
+    else
+        {352}event QUALAdmissionChecked(D_8);
+        {353}let Q1_1: qualifiedSet = addDealerToQUAL(Q_1,D_8) in
+        {354}event QUALStateUpdated(Q1_1,D_8);
+        {355}event QUALDealerInserted(Q1_1,D_8);
+        {356}event QUALStatePublished(Q1_1);
+        (
+            {357}out(cqualStateInternal, (Q1_1,D_8))
+        ) | (
+            {358}out(cvmssRecoveryInternal, (Q1_1,D_8))
+        )
+) | (
+    {360}!
+    {361}in(c, (=tagCOMPLAINT,Cp: complaint));
+    {362}let D_9: participant = getComplaintDealer(Cp) in
+    {363}let V_10: participant = getComplaintIssuer(Cp) in
+    {364}let Tv_3: vmssTranscript = getComplaintTranscript(Cp) in
+    {365}in(ccomplaintRaised, (=V_10,=D_9,=Tv_3));
+    {366}in(cvmssInternal, (=D_9,=Tv_3,vp_1: vmsspoly,x1d: scalar,x2d: scalar,y1d: scalar,y2d: scalar));
+    {367}let Expected: vmssshare = getVMSSShareForParticipant(vp_1,V_10) in
+    {369}event VMSSDisputeProofGenerated(D_9,V_10,Tv_3);
+    {368}let Pr: cryptographicProof = createVMSSDisputeProof(Cp,Expected) in
+    {370}if (verifyVMSSDisputeProof(Pr,Cp,Expected,getVMSSCoefficientCommitmentVector(vp_1)) = ok) then
+        {371}event VMSSDisputeProofVerified(V_10,D_9,Tv_3);
+        {372}event VMSSDisputeResolved(V_10,D_9,honest);
+        {373}event VMSSDealerValidated(V_10,D_9,Tv_3);
+        {374}event QUALDealerValidated(D_9,Tv_3);
+        {375}event QUALDealerValidatedIdentity(D_9);
+        {376}event DealerAddedToQUAL(D_9);
+        {377}out(cqualInternal, (D_9,Tv_3,qualified))
+    else
+        {378}event VMSSDisputeResolved(V_10,D_9,dishonest);
+        {379}event VMSSDealerDisqualified(D_9);
+        {380}insert disqualifiedDealers(D_9);
+        {381}out(cqualInternal, (D_9,Tv_3,disqualified))
+) | (
+    {382}!
+    {383}in(ccompromisedVMSSComplaint, (D_10: participant,bad_2: bitstring));
+    {384}event VMSSDealerDisqualified(D_10);
+    {385}insert disqualifiedDealers(D_10);
+    {386}event VMSSDealerDisqualifiedAfterComplaint(D_10,D_10)
+) | (
+    {387}!
+    {388}in(ccomplaintThresholdWitness, (D_11: participant,V_11: participant));
+    {389}event ComplaintThresholdReached(D_11);
+    {390}event VMSSDisputeResolved(V_11,D_11,dishonest);
+    {391}event VMSSDealerDisqualified(D_11);
+    {392}insert disqualifiedDealers(D_11)
+) | (
+    {393}!
+    {394}in(ccomplaintForQagg, (V_12: participant,D_12: participant,Tv_4: vmssTranscript));
+    {395}in(cqaggInserted, =D_12);
+    {396}event ComplaintAgainstDealerAlreadyInQagg(V_12,D_12);
+    {397}event VMSSDisputeResolved(V_12,D_12,dishonest);
+    {398}event VMSSDealerDisqualified(D_12);
+    {399}insert disqualifiedDealers(D_12)
+) | (
+    {400}!
+    {401}in(cmalformedComplaintForQagg, (V_13: participant,D_13: participant,bad_3: bitstring));
+    {402}in(cqaggInserted, =D_13);
+    {403}event MalformedComplaintAgainstDealerAlreadyInQagg(V_13,D_13,bad_3);
+    {404}event VMSSDealerDisqualified(D_13);
+    {405}insert disqualifiedDealers(D_13)
+) | (
+    {406}!
+    {407}in(cmalformedComplaintThreshold, (D_14: participant,V_14: participant));
+    {408}event ComplaintThresholdReached(D_14);
+    {409}event VMSSDealerDisqualified(D_14);
+    {410}insert disqualifiedDealers(D_14)
+)
+
+-- Query not (event(ZContributionGenerated(P_5,z)) && attacker(z)) in process 1.
+Translating the process into Horn clauses...
+select attacker(exp2(h1,a))/-5000
+select attacker(exp1(g1,a))/-5000
+Completing...
+200 rules inserted. Base: 191 rules (102 with conclusion selected). Queue: 100 rules.
+select attacker(aggregatedPVSSTranscript(exp1(g1,a),HAv,AAv,YAv,exp2(h1,a_1),WAv,*t,*PS))/-5000
+select attacker(aggregatedPVSSTranscript(exp1(g1,a),HAv,AAv,YAv,UA,WAv,*t,*PS))/-5000
+select attacker(aggregatedPVSSTranscript(ZA,HAv,AAv,YAv,exp2(h1,a),WAv,*t,*PS))/-5000
+select attacker(aggregatedPVSSTranscript(ZA,HAv,AAv,YAv,UA,WAv,*t,*PS))/-5000
+400 rules inserted. Base: 354 rules (159 with conclusion selected). Queue: 72 rules.
+select mess(caggForExtension[],aggregatedPVSSTranscript(exp1(g1,a),HAv,AAv,YAv,UA,WAv,T,CommitteeN))/-5000
+select mess(caggForExtension[],aggregatedPVSSTranscript(ZA,HAv,AAv,YAv,UA,WAv,T,CommitteeN))/-5000
+600 rules inserted. Base: 461 rules (182 with conclusion selected). Queue: 39 rules.
+select mess(cqualStateInternal[],(Q_2,LastD_2))/-5000
+800 rules inserted. Base: 592 rules (238 with conclusion selected). Queue: 38 rules.
+1000 rules inserted. Base: 707 rules (289 with conclusion selected). Queue: 39 rules.
+Starting query not (event(ZContributionGenerated(P_5,z)) && attacker(z))
+RESULT not (event(ZContributionGenerated(P_5,z)) && attacker(z)) is true.
+
+--------------------------------------------------------------
+Verification summary:
+
+Query not (event(ZContributionGenerated(P_5,z)) && attacker(z)) is true.
+
+--------------------------------------------------------------
+
+
+
+================================
+GNU TIME OUTPUT
+================================
+
+WALL_SECONDS=17.63
+USER_CPU_SECONDS=17.31
+SYSTEM_CPU_SECONDS=0.03
+MAX_RSS_KB=30080
+CPU_PERCENT=98%
+

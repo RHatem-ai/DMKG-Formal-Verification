@@ -1,0 +1,11 @@
+{
+    "Tool": "ProVerif",
+    "Model": "DMKG_Formal_Verification_ProVerif_NParticipants_ThresholdT - ZContribution.pv",
+    "Execution_Time_s": 17.6366,
+    "Max_RAM_MiB": 29.375,
+    "Result_Count": 1,
+    "Proved": 1,
+    "Not_Proved": 0,
+    "Unknown": 0,
+    "Exit_Code": 0
+}
