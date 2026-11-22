@@ -29,3 +29,7 @@ The following security properties are analyzed:
 ## Experimental Evaluation
 
 The repository includes execution-time measurements, peak memory consumption, and verification outcomes for individual security properties and global verification.
+
+## Associated Publication
+
+Formal Verification of Cryptographic Protocols: An Experimental Study of ProVerif and Tamarin on a Distributed Multi-Key Generation Protocol.
